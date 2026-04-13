@@ -1,0 +1,496 @@
+{
+  "ru": [
+    {
+      "category": "Математика (Алгебра)",
+      "items": [
+        {
+          "name": "Квадратное уравнение",
+          "formula": "ax² + bx + c = 0",
+          "description": "Корни: x = (-b ± √D) / 2a, где Дискриминант D = b² - 4ac"
+        },
+        {
+          "name": "Теорема Виета",
+          "formula": "x₁ + x₂ = -p, x₁·x₂ = q",
+          "description": "Для приведенного квадратного уравнения x² + px + q = 0"
+        },
+        {
+          "name": "Разность квадратов",
+          "formula": "a² - b² = (a - b)(a + b)",
+          "description": "Формула сокращенного умножения"
+        },
+        {
+          "name": "Квадрат суммы",
+          "formula": "(a + b)² = a² + 2ab + b²",
+          "description": "Формула сокращенного умножения"
+        },
+        {
+          "name": "Арифметическая прогрессия",
+          "formula": "Sₙ = (a₁ + aₙ) / 2 · n",
+          "description": "Сумма aₙ членов арифметической прогрессии"
+        },
+        {
+          "name": "Геометрическая прогрессия",
+          "formula": "S = b₁ / (1 - q)",
+          "description": "Сумма бесконечно убывающей геометрической прогрессии (|q| < 1)"
+        }
+      ]
+    },
+    {
+      "category": "Математика (Степени и Логарифмы)",
+      "items": [
+        {
+          "name": "Свойства степеней (умножение)",
+          "formula": "aᵐ · aⁿ = aᵐ⁺ⁿ",
+          "description": "Основания сохраняются, степени складываются"
+        },
+        {
+          "name": "Основное логарифмическое тождество",
+          "formula": "a^(logₐ b) = b",
+          "description": "При a > 0, a ≠ 1, b > 0"
+        },
+        {
+          "name": "Сумма логарифмов",
+          "formula": "logₐ(b) + logₐ(c) = logₐ(b · c)",
+          "description": "Логарифм произведения равен сумме логарифмов"
+        }
+      ]
+    },
+    {
+      "category": "Математика (Тригонометрия)",
+      "items": [
+        {
+          "name": "Основное триг. тождество",
+          "formula": "sin²α + cos²α = 1",
+          "description": "Сумма квадратов синуса и косинуса одного угла"
+        },
+        {
+          "name": "Синус двойного угла",
+          "formula": "sin(2α) = 2sinα · cosα",
+          "description": ""
+        },
+        {
+          "name": "Косинус двойного угла",
+          "formula": "cos(2α) = cos²α - sin²α",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "category": "Математика (Геометрия)",
+      "items": [
+        {
+          "name": "Теорема Пифагора",
+          "formula": "c² = a² + b²",
+          "description": "Для прямоугольного треугольника: квадрат гипотенузы равен сумме квадратов катетов"
+        },
+        {
+          "name": "Площадь круга",
+          "formula": "S = πR²",
+          "description": "Площадь через радиус"
+        },
+        {
+          "name": "Длина окружности",
+          "formula": "L = 2πR = πd",
+          "description": "Длина через радиус R или диаметр d"
+        },
+        {
+          "name": "Площадь треугольника",
+          "formula": "S = 1/2 · a · h",
+          "description": "Половина произведения основания на высоту"
+        },
+        {
+          "name": "Формула Герона",
+          "formula": "S = √(p(p-a)(p-b)(p-c))",
+          "description": "Площадь треугольника, p - полупериметр (a+b+c)/2"
+        }
+      ]
+    },
+    {
+      "category": "Физика (Кинематика и Динамика)",
+      "items": [
+        {
+          "name": "Второй закон Ньютона",
+          "formula": "F = m · a",
+          "description": "Сила равна произведению массы на ускорение (векторная сумма всех сил)"
+        },
+        {
+          "name": "Закон всемирного тяготения",
+          "formula": "F = G · (m₁ · m₂) / r²",
+          "description": "Гравитационная постоянная G ≈ 6.67 × 10⁻¹¹ Н·м²/кг²"
+        },
+        {
+          "name": "Ускорение свободного падения",
+          "formula": "g = G · M / R²",
+          "description": "На поверхности планеты массой M и радиусом R"
+        },
+        {
+          "name": "Путь при равноускоренном движении",
+          "formula": "S = v₀t + (a·t²)/2",
+          "description": "Где v₀ - начальная скорость, a - ускорение, t - время"
+        },
+        {
+          "name": "Центростремительное ускорение",
+          "formula": "a = v² / R = ω²R",
+          "description": "Ускорение при равномерном движении по окружности"
+        }
+      ]
+    },
+    {
+      "category": "Физика (Энергия и Импульс)",
+      "items": [
+        {
+          "name": "Кинетическая энергия",
+          "formula": "Eₖ = (m · v²) / 2",
+          "description": "Энергия движения тела"
+        },
+        {
+          "name": "Потенциальная энергия",
+          "formula": "Eₚ = m · g · h",
+          "description": "Энергия тела, поднятого на высоту h"
+        },
+        {
+          "name": "Закон сохранения импульса",
+          "formula": "p₁ + p₂ = const",
+          "description": "m₁v₁ + m₂v₂ до = m₁v₁' + m₂v₂' после взаимодействия"
+        },
+        {
+          "name": "Работа силы",
+          "formula": "A = F · S · cos(α)",
+          "description": "Работа при перемещении тела на расстояние S"
+        }
+      ]
+    },
+    {
+      "category": "Физика (Термодинамика)",
+      "items": [
+        {
+          "name": "Уравнение Менделеева-Клапейрона",
+          "formula": "P · V = (m/M) · R · T = ν · R · T",
+          "description": "Уравнение состояния идеального газа"
+        },
+        {
+          "name": "Количество теплоты (нагревание)",
+          "formula": "Q = c · m · ΔT",
+          "description": "Удельная теплоемкость c"
+        },
+        {
+          "name": "Идеальная тепловая машина (КПД)",
+          "formula": "η = (T₁ - T₂) / T₁",
+          "description": "Цикл Карно. T₁ - температура нагревателя, T₂ - холодильника"
+        }
+      ]
+    },
+    {
+      "category": "Физика (Электродинамика)",
+      "items": [
+        {
+          "name": "Закон Кулона",
+          "formula": "F = k · (|q₁|·|q₂|) / r²",
+          "description": "Сила взаимодействия двух точечных зарядов"
+        },
+        {
+          "name": "Закон Ома для участка цепи",
+          "formula": "I = U / R",
+          "description": "Сила тока (I), Напряжение (U), Сопротивление (R)"
+        },
+        {
+          "name": "Закон Ома для полной цепи",
+          "formula": "I = E / (R + r)",
+          "description": "E - ЭДС источника, r - внутреннее сопротивление источника"
+        },
+        {
+          "name": "Закон Джоуля-Ленца",
+          "formula": "Q = I² · R · t",
+          "description": "Количество теплоты, выделяемое проводником с током"
+        },
+        {
+          "name": "Электроемкость плоского конденсатора",
+          "formula": "C = (ε₀ · ε · S) / d",
+          "description": "Где d - расстояние между пластинами площадью S"
+        }
+      ]
+    },
+    {
+      "category": "Физика (Колебания и Волны)",
+      "items": [
+        {
+          "name": "Период мат. маятника",
+          "formula": "T = 2π√(L/g)",
+          "description": "Где L - длина нити"
+        },
+        {
+          "name": "Период пружинного маятника",
+          "formula": "T = 2π√(m/k)",
+          "description": "Где k - жесткость пружины, m - масса груза"
+        },
+        {
+          "name": "Длина волны",
+          "formula": "λ = v · T = v / ν",
+          "description": "Где ν (ню) - частота, v - скорость волны"
+        }
+      ]
+    },
+    {
+      "category": "Химия (Основы)",
+      "items": [
+        {
+          "name": "Количество вещества",
+          "formula": "n = m / M = V / Vₘ = N / Nₐ",
+          "description": "Vₘ = 22.4 л/моль (н.у.), Nₐ = 6.02 × 10²³"
+        },
+        {
+          "name": "Массовая доля вещества",
+          "formula": "ω = m(в-ва) / m(р-ра) · 100%",
+          "description": "Процентная концентрация в растворе"
+        }
+      ]
+    }
+  ],
+  "en": [
+    {
+      "category": "Mathematics (Algebra)",
+      "items": [
+        {
+          "name": "Quadratic Equation",
+          "formula": "ax² + bx + c = 0",
+          "description": "Roots: x = (-b ± √D) / 2a, where Discriminant D = b² - 4ac"
+        },
+        {
+          "name": "Vieta's Formulas",
+          "formula": "x₁ + x₂ = -p, x₁·x₂ = q",
+          "description": "For monic quadratic equation x² + px + q = 0"
+        },
+        {
+          "name": "Difference of Squares",
+          "formula": "a² - b² = (a - b)(a + b)",
+          "description": "Short multiplication formula"
+        },
+        {
+          "name": "Square of Sum",
+          "formula": "(a + b)² = a² + 2ab + b²",
+          "description": "Short multiplication formula"
+        },
+        {
+          "name": "Arithmetic Progression",
+          "formula": "Sₙ = (a₁ + aₙ) / 2 · n",
+          "description": "Sum of n terms of AP"
+        },
+        {
+          "name": "Geometric Progression",
+          "formula": "S = b₁ / (1 - q)",
+          "description": "Sum of infinite geometric progression (|q| < 1)"
+        }
+      ]
+    },
+    {
+      "category": "Math (Exponents & Logarithms)",
+      "items": [
+        {
+          "name": "Properties of Exponents",
+          "formula": "aᵐ · aⁿ = aᵐ⁺ⁿ",
+          "description": "Bases remain, exponents are added"
+        },
+        {
+          "name": "Logarithmic Identity",
+          "formula": "a^(logₐ b) = b",
+          "description": "For a > 0, a ≠ 1, b > 0"
+        },
+        {
+          "name": "Sum of Logarithms",
+          "formula": "logₐ(b) + logₐ(c) = logₐ(b · c)",
+          "description": "Logarithm of product equals sum of logarithms"
+        }
+      ]
+    },
+    {
+      "category": "Math (Trigonometry)",
+      "items": [
+        {
+          "name": "Trigonometric Identity",
+          "formula": "sin²α + cos²α = 1",
+          "description": "Sum of squares of sine and cosine"
+        },
+        {
+          "name": "Double Angle Sine",
+          "formula": "sin(2α) = 2sinα · cosα",
+          "description": ""
+        },
+        {
+          "name": "Double Angle Cosine",
+          "formula": "cos(2α) = cos²α - sin²α",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "category": "Math (Geometry)",
+      "items": [
+        {
+          "name": "Pythagorean Theorem",
+          "formula": "c² = a² + b²",
+          "description": "Square of hypotenuse equals sum of squares of legs"
+        },
+        {
+          "name": "Area of a Circle",
+          "formula": "S = πR²",
+          "description": "Area via radius"
+        },
+        {
+          "name": "Circumference",
+          "formula": "L = 2πR = πd",
+          "description": "Length via radius R or diameter d"
+        },
+        {
+          "name": "Area of a Triangle",
+          "formula": "S = 1/2 · a · h",
+          "description": "Half the product of base and height"
+        },
+        {
+          "name": "Heron's Formula",
+          "formula": "S = √(p(p-a)(p-b)(p-c))",
+          "description": "Area of triangle, p - semiperimeter (a+b+c)/2"
+        }
+      ]
+    },
+    {
+      "category": "Physics (Kinematics & Dynamics)",
+      "items": [
+        {
+          "name": "Newton's Second Law",
+          "formula": "F = m · a",
+          "description": "Force equals mass times acceleration (векторная сумма всех сил)"
+        },
+        {
+          "name": "Law of Universal Gravitation",
+          "formula": "F = G · (m₁ · m₂) / r²",
+          "description": "Gravitational constant G ≈ 6.67 × 10⁻¹¹ Н·м²/кг²"
+        },
+        {
+          "name": "Gravitational Acceleration",
+          "formula": "g = G · M / R²",
+          "description": "On surface of planet of mass M и радиусом R"
+        },
+        {
+          "name": "Distance in Uniform Acceleration",
+          "formula": "S = v₀t + (a·t²)/2",
+          "description": "Where v₀ - initial velocity, a - acceleration, t - time"
+        },
+        {
+          "name": "Centripetal Acceleration",
+          "formula": "a = v² / R = ω²R",
+          "description": "Acceleration in uniform circular motion"
+        }
+      ]
+    },
+    {
+      "category": "Physics (Energy & Momentum)",
+      "items": [
+        {
+          "name": "Kinetic Energy",
+          "formula": "Eₖ = (m · v²) / 2",
+          "description": "Energy of moving body"
+        },
+        {
+          "name": "Potential Energy",
+          "formula": "Eₚ = m · g · h",
+          "description": "Energy of body raised to height h"
+        },
+        {
+          "name": "Law of Conservation of Momentum",
+          "formula": "p₁ + p₂ = const",
+          "description": "m₁v₁ + m₂v₂ before = m₁v₁' + m₂v₂' after interaction"
+        },
+        {
+          "name": "Work of a Force",
+          "formula": "A = F · S · cos(α)",
+          "description": "Work during body displacement by distance S"
+        }
+      ]
+    },
+    {
+      "category": "Physics (Thermodynamics)",
+      "items": [
+        {
+          "name": "Ideal Gas Law",
+          "formula": "P · V = (m/M) · R · T = ν · R · T",
+          "description": "Equation of state of ideal gas"
+        },
+        {
+          "name": "Heat (Heating)",
+          "formula": "Q = c · m · ΔT",
+          "description": "Specific heat capacity c"
+        },
+        {
+          "name": "Ideal Heat Engine (Efficiency)",
+          "formula": "η = (T₁ - T₂) / T₁",
+          "description": "Carnot cycle. T₁ - heater temp, T₂ - cooler temp"
+        }
+      ]
+    },
+    {
+      "category": "Physics (Electrodynamics)",
+      "items": [
+        {
+          "name": "Coulomb's Law",
+          "formula": "F = k · (|q₁|·|q₂|) / r²",
+          "description": "Сила взаимодействия двух точечных заряbeforeв"
+        },
+        {
+          "name": "Ohm's Law (Section)",
+          "formula": "I = U / R",
+          "description": "Current (I), Voltage (U), Resistance (R)"
+        },
+        {
+          "name": "Ohm's Law (Complete Circuit)",
+          "formula": "I = E / (R + r)",
+          "description": "E - EMF of source, r - internal resistance"
+        },
+        {
+          "name": "Joule-Lenz Law",
+          "formula": "Q = I² · R · t",
+          "description": "Heat released by conductive wire"
+        },
+        {
+          "name": "Capacitance of a Flat Capacitor",
+          "formula": "C = (ε₀ · ε · S) / d",
+          "description": "Where d - distance between plates of area S"
+        }
+      ]
+    },
+    {
+      "category": "Physics (Waves & Oscillations)",
+      "items": [
+        {
+          "name": "Period of a Simple Pendulum",
+          "formula": "T = 2π√(L/g)",
+          "description": "Where L - thread length"
+        },
+        {
+          "name": "Period of a Spring Pendulum",
+          "formula": "T = 2π√(m/k)",
+          "description": "Where k - spring constant, m - mass"
+        },
+        {
+          "name": "Wavelength",
+          "formula": "λ = v · T = v / ν",
+          "description": "Where ν - frequency, v - wave speed"
+        }
+      ]
+    },
+    {
+      "category": "Chemistry (Basics)",
+      "items": [
+        {
+          "name": "Amount of Substance",
+          "formula": "n = m / M = V / Vₘ = N / Nₐ",
+          "description": "Vₘ = 22.4 л/моль (STP), Nₐ = 6.02 × 10²³"
+        },
+        {
+          "name": "Mass Fraction",
+          "formula": "ω = m(в-ва) / m(р-ра) · 100%",
+          "description": "Percentage concentration in solution"
+        }
+      ]
+    }
+  ]
+}
