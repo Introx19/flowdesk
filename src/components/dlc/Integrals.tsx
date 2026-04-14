@@ -10,6 +10,8 @@ export default function Integrals() {
   const { language } = useSettings();
   const [expr, setExpr] = useState('');
   const [variable, setVariable] = useState('x');
+  const [lowerBound, setLowerBound] = useState('');
+  const [upperBound, setUpperBound] = useState('');
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,8 +27,14 @@ export default function Integrals() {
       safeExpr = safeExpr.replace(/π/g, 'pi');
       
       // Calculate integral
-      const res = nerdamer(`integrate(${safeExpr}, ${variable})`).text();
-      setResult(res + ' + C');
+      let res;
+      if (lowerBound && upperBound) {
+         res = nerdamer(`defint(${safeExpr}, ${lowerBound}, ${upperBound}, ${variable})`).text();
+      } else {
+         res = nerdamer(`integrate(${safeExpr}, ${variable})`).text();
+         res += ' + C';
+      }
+      setResult(res);
     } catch (e: any) {
       setError('Error parsing or integrating. Check syntax.');
       setResult(null);
@@ -87,7 +95,21 @@ export default function Integrals() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ fontSize: '2em', fontWeight: 300, color: 'var(--accent)', marginTop: '-8px' }}>∫</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginRight: '5px' }}>
+            <input 
+              type="text" 
+              value={upperBound} 
+              onChange={e => setUpperBound(e.target.value)} 
+              style={{ width: '30px', textAlign: 'center', padding: '0', fontFamily: 'monospace', fontSize: '0.85em', color: 'var(--text-main)', marginBottom: '-5px', zIndex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid var(--glass-border)', outline: 'none' }}
+            />
+            <div style={{ fontSize: '2.5em', fontWeight: 300, color: 'var(--accent)', lineHeight: '0.8' }}>∫</div>
+            <input 
+              type="text" 
+              value={lowerBound} 
+              onChange={e => setLowerBound(e.target.value)} 
+              style={{ width: '30px', textAlign: 'center', padding: '0', fontFamily: 'monospace', fontSize: '0.85em', color: 'var(--text-main)', marginTop: '-5px', zIndex: 1, background: 'transparent', border: 'none', borderBottom: '1px solid var(--glass-border)', outline: 'none' }}
+            />
+          </div>
           
           <input 
             ref={inputRef}

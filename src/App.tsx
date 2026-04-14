@@ -83,7 +83,10 @@ function App() {
     if (activeTools.screenshot) itemCount++;
     if (activeTools.paint) itemCount++;
 
-    const height = 35 + (itemCount * 36) + (hasMedia ? 10 : 0);
+    // 20px chevron + 16px (top+bottom sidebar pad) + itemCount*35 + gaps + bottomBar (42px) + divider
+    // Gaps count = itemCount + 1 (for chevron) + 1 (if bottomBar separated by margin)
+    // Divider is approx 11px
+    const height = 20 + 16 + (itemCount * 35) + ((itemCount > 0 ? itemCount + 1 : 0) * 5) + 42 + (hasMedia ? 16 : 0);
 
     if (window.electronAPI) {
         // @ts-ignore (we know height is passed but just in case)
@@ -178,7 +181,7 @@ function App() {
         alignItems: 'center',
         flexShrink: 0
       }}>
-        <div style={{ flex: isCompact ? '0 0 auto' : 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <div style={{ flex: isCompact ? '0 1 auto' : 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px', width: '100%', alignItems: 'center' }}>
         {isCompact && !isMini && (
           <button
             className="compact-mini-btn"
@@ -196,31 +199,32 @@ function App() {
             </button>
           </div>
         )}
-        {activeTools.stopwatch && <div className={`nav-item ${activeTab === 'stopwatch' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('stopwatch')} title={t(language as Lang, 'stopwatch')}><TimerIcon size={20} /></div>}
-        {activeTools.minitimer && <div className={`nav-item ${activeTab === 'minitimer' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('minitimer')} title={t(language as Lang, 'minitimer')}><Hourglass size={20} /></div>}
-        {activeTools.reminders && <div className={`nav-item ${activeTab === 'reminders' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('reminders')} title={t(language as Lang, 'reminders')}><Pin size={20} /></div>}
-        {activeTools.calc && <div className={`nav-item ${activeTab === 'calc' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('calc')} title={t(language as Lang, 'calc')}><CalculatorIcon size={20} /></div>}
-        {activeTools.tasks && <div className={`nav-item ${activeTab === 'tasks' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('tasks')} title={t(language as Lang, 'tasks')}><List size={20} /></div>}
-        {activeTools.notes && <div className={`nav-item ${activeTab === 'notes' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('notes')} title={t(language as Lang, 'notes')}><StickyNote size={20} /></div>}
-        {activeTools.periodicTable && <div className={`nav-item ${activeTab === 'periodicTable' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('periodicTable')} title={t(language as Lang, 'periodicTable')}><FlaskConical size={20} /></div>}
-        {activeTools.desmos && <div className={`nav-item ${activeTab === 'desmos' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('desmos')} title={t(language as Lang, 'desmos')}><LineChart size={20} /></div>}
-        {activeTools.formulas && <div className={`nav-item ${activeTab === 'formulas' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('formulas')} title={t(language as Lang, 'formulas')}><BookOpen size={20} /></div>}
-        {activeTools.integrals && <div className={`nav-item ${activeTab === 'integrals' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('integrals')} title={t(language as Lang, 'integrals')}><FunctionSquare size={20} /></div>}
+        {activeTools.stopwatch && <div id="nav-stopwatch" className={`nav-item ${activeTab === 'stopwatch' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('stopwatch')} title={t(language as Lang, 'stopwatch')}><TimerIcon size={20} /></div>}
+        {activeTools.minitimer && <div id="nav-minitimer" className={`nav-item ${activeTab === 'minitimer' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('minitimer')} title={t(language as Lang, 'minitimer')}><Hourglass size={20} /></div>}
+        {activeTools.reminders && <div id="nav-reminders" className={`nav-item ${activeTab === 'reminders' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('reminders')} title={t(language as Lang, 'reminders')}><Pin size={20} /></div>}
+        {activeTools.calc && <div id="nav-calc" className={`nav-item ${activeTab === 'calc' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('calc')} title={t(language as Lang, 'calc')}><CalculatorIcon size={20} /></div>}
+        {activeTools.tasks && <div id="nav-tasks" className={`nav-item ${activeTab === 'tasks' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('tasks')} title={t(language as Lang, 'tasks')}><List size={20} /></div>}
+        {activeTools.notes && <div id="nav-notes" className={`nav-item ${activeTab === 'notes' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('notes')} title={t(language as Lang, 'notes')}><StickyNote size={20} /></div>}
+        {activeTools.periodicTable && <div id="nav-periodicTable" className={`nav-item ${activeTab === 'periodicTable' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('periodicTable')} title={t(language as Lang, 'periodicTable')}><FlaskConical size={20} /></div>}
+        {activeTools.desmos && <div id="nav-desmos" className={`nav-item ${activeTab === 'desmos' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('desmos')} title={t(language as Lang, 'desmos')}><LineChart size={20} /></div>}
+        {activeTools.formulas && <div id="nav-formulas" className={`nav-item ${activeTab === 'formulas' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('formulas')} title={t(language as Lang, 'formulas')}><BookOpen size={20} /></div>}
+        {activeTools.integrals && <div id="nav-integrals" className={`nav-item ${activeTab === 'integrals' && !isCompact ? 'active' : ''}`} onClick={() => openToolOption('integrals')} title={t(language as Lang, 'integrals')}><FunctionSquare size={20} /></div>}
         
         {(activeTools.stopwatch || activeTools.minitimer || activeTools.reminders || activeTools.calc || activeTools.tasks || activeTools.notes) && (activeTools.screenshot || activeTools.paint) && (
           <div style={{ width: '30px', height: '1px', background: 'var(--glass-border)', margin: '5px auto' }}></div>
         )}
         
-        {activeTools.screenshot && <div className="nav-item" onClick={takeScreenshot} title={t(language as Lang, 'screenshot')}><Scissors size={20} /></div>}
-        {activeTools.paint && <div className="nav-item" onClick={openPaint} title={t(language as Lang, 'paint')}><Palette size={20} /></div>}
+        {activeTools.screenshot && <div id="nav-screenshot" className="nav-item" onClick={takeScreenshot} title={t(language as Lang, 'screenshot')}><Scissors size={20} /></div>}
+        {activeTools.paint && <div id="nav-paint" className="nav-item" onClick={openPaint} title={t(language as Lang, 'paint')}><Palette size={20} /></div>}
         
         {!isCompact && (
           <>
             <div style={{ width: '30px', height: '1px', background: 'var(--glass-border)', margin: '5px 0' }}></div>
-            <div className={`nav-item ${dndMode ? 'active' : ''}`} onClick={() => updateSettings({ dndMode: !dndMode })} title={dndMode ? t(language as Lang, 'dndOn') : t(language as Lang, 'dndOff')}><Moon size={20} /></div>
+            <div id="nav-dnd" className={`nav-item ${dndMode ? 'active' : ''}`} onClick={() => updateSettings({ dndMode: !dndMode })} title={dndMode ? t(language as Lang, 'dndOn') : t(language as Lang, 'dndOff')}><Moon size={20} /></div>
             
             <div style={{ position: 'relative' }}>
               <div 
+                id="nav-opacity"
                 className={`nav-item ${isOpaque ? 'active' : ''}`} 
                 onClick={() => setIsOpaque(!isOpaque)} 
                 onContextMenu={(e) => { e.preventDefault(); setShowOpacitySlider(!showOpacitySlider); }}
@@ -230,22 +234,23 @@ function App() {
               </div>
             </div>
             
-            <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} title={t(language as Lang, 'settings')}><SettingsIcon size={20} /></div>
+            <div id="nav-settings" className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} title={t(language as Lang, 'settings')}><SettingsIcon size={20} /></div>
           </>
         )}
         </div>
 
         {isCompact && (
           <div style={{
-            position: 'absolute',
-            bottom: 0, left: 0, right: 0,
+            flexShrink: 0,
+            width: '100%',
             padding: '8px 0 10px',
+            marginTop: '5px',
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '6px',
-            background: 'var(--bg-main)',
+            background: 'transparent',
             borderTop: '1px solid var(--glass-border)'
           }}>
             <button className="win-btn" onClick={toggleCompact} title={t(language as Lang, 'expand')}><PanelRightClose size={16} /></button>
