@@ -8,6 +8,7 @@
   --accent: #eab308; /* Yellow Cyberpunk feel */
   --accent-hover: #ca8a04;
   --accent-glow: #eab30880;
+  --accent-text: #000000;
 }
 
 :root[data-theme="light"] {
@@ -20,6 +21,7 @@
   --accent: #3b82f6; /* Blue app tone */
   --accent-hover: #2563eb;
   --accent-glow: #3b82f680;
+  --accent-text: #ffffff;
 }
 
 :root[data-theme="light"] .nav-item.active {
@@ -36,6 +38,7 @@
   --accent: #f97316; /* Peach/Orange */
   --accent-hover: #ea580c;
   --accent-glow: #f9731680;
+  --accent-text: #ffffff;
 }
 
 :root[data-theme="soft"] .nav-item.active {
@@ -269,7 +272,7 @@ body {
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #000;
+  color: var(--accent-text);
 }
 
 .btn-primary:hover {
@@ -379,14 +382,9 @@ body {
 
 .action-btn.active {
   background: var(--accent);
-  color: #000;
+  color: var(--accent-text);
   border-color: var(--accent);
   box-shadow: 0 0 10px var(--accent-glow);
-}
-
-:root[data-theme="light"] .action-btn.active,
-:root[data-theme="soft"] .action-btn.active {
-  color: #fff;
 }
 
 .action-btn.outline {

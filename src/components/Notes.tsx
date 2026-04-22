@@ -3,10 +3,12 @@ import { Trash2, Image as ImageIcon } from 'lucide-react';
 import { useWindowSize } from '../hooks/useWindowSize';
 import { useSettings } from '../contexts/SettingsContext';
 import { t, type Lang } from '../i18n/texts';
+import { useModal } from '../contexts/ModalContext';
 
 export default function Notes() {
   const { isXs, isSm } = useWindowSize();
   const { language } = useSettings();
+  const modal = useModal();
   const editorRef = useRef<HTMLDivElement>(null);
   
   const [noteHTML, setNoteHTML] = useState(() => {
@@ -27,8 +29,8 @@ export default function Notes() {
     setNoteHTML(e.currentTarget.innerHTML);
   };
 
-  const clearNote = () => {
-    if (confirm(t(language as Lang, 'clearNoteConfirm'))) {
+  const clearNote = async () => {
+    if (await modal.confirm(t(language as Lang, 'clearNoteConfirm'))) {
       setNoteHTML('');
       if (editorRef.current) {
          editorRef.current.innerHTML = '';

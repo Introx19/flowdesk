@@ -269,7 +269,7 @@ function App() {
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{fontSize: '0.85em', color: 'var(--text-muted)'}}>Прозрачность</span>
+            <span style={{fontSize: '0.85em', color: 'var(--text-muted)'}}>{t(language as Lang, 'opacity')}</span>
             <span style={{fontSize: '0.8em', color: 'var(--accent)'}}>{Math.round(bgOpacity * 100)}%</span>
           </div>
           <input 

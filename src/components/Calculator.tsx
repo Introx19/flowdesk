@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { evaluate } from 'mathjs';
 import { useWindowSize } from '../hooks/useWindowSize';
 import { Settings2 } from 'lucide-react';
@@ -15,8 +15,30 @@ export default function Calculator() {
     localStorage.setItem('calc-mode', isScientific ? 'sci' : 'std');
   }, [isScientific]);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const appendNum = (num: string) => {
-    setDisplay(prev => prev === '0' || prev === 'Error' ? num : prev + num);
+    setDisplay(prev => {
+      if (prev === '0' || prev === 'Error') {
+        setTimeout(() => {
+           inputRef.current?.setSelectionRange(num.length, num.length);
+           inputRef.current?.focus();
+        }, 0);
+        return num;
+      }
+      const input = inputRef.current;
+      if (input && input.selectionStart !== null) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd || start;
+        const newStr = prev.slice(0, start) + num + prev.slice(end);
+        setTimeout(() => {
+          input.setSelectionRange(start + num.length, start + num.length);
+          input.focus();
+        }, 0);
+        return newStr;
+      }
+      return prev + num;
+    });
   };
 
   const calculate = () => {
@@ -52,7 +74,30 @@ export default function Calculator() {
       } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
         clear();
       } else if (e.key === 'Backspace') {
-        setDisplay(prev => prev.length > 1 && prev !== 'Error' ? prev.slice(0, -1) : '0');
+        setDisplay(prev => {
+          if (prev === 'Error') return '0';
+          const input = inputRef.current;
+          if (input && input.selectionStart !== null && input.selectionStart > 0) {
+            const start = input.selectionStart;
+            const end = input.selectionEnd || start;
+            if (start === end) {
+              const newStr = prev.slice(0, start - 1) + prev.slice(end);
+              setTimeout(() => {
+                input.setSelectionRange(start - 1, start - 1);
+                input.focus();
+              }, 0);
+              return newStr || '0';
+            } else {
+              const newStr = prev.slice(0, start) + prev.slice(end);
+              setTimeout(() => {
+                input.setSelectionRange(start, start);
+                input.focus();
+              }, 0);
+              return newStr || '0';
+            }
+          }
+          return prev.length > 1 ? prev.slice(0, -1) : '0';
+        });
       }
     };
 
@@ -95,14 +140,32 @@ export default function Calculator() {
         background: 'var(--bg-card)', 
         padding: isSm ? '8px' : '15px', 
         borderRadius: '8px', 
-        textAlign: 'right',
-        fontSize: fontSize,
         marginBottom: isSm ? '4px' : '10px',
-        overflowX: 'auto',
-        overflowY: 'hidden',
-        whiteSpace: 'nowrap'
+        display: 'flex'
       }}>
-        {display}
+        <input
+          ref={inputRef}
+          type="text"
+          value={display}
+          onChange={(e) => setDisplay(e.target.value)}
+          onKeyDown={(e) => {
+             if (e.key === 'Enter') {
+               e.preventDefault();
+               calculate();
+             }
+          }}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+            textAlign: 'right',
+            fontSize: fontSize,
+            color: 'var(--accent)',
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            outline: 'none'
+          }}
+        />
       </div>
 
       <div style={{ display: 'flex', gap: '10px', flex: 1 }}>
@@ -136,7 +199,26 @@ export default function Calculator() {
           {['C', '(', ')', '←'].map(btn => (
             <button key={btn} className={`btn ${btn === 'C' || btn === '←' ? 'btn-primary' : ''}`} style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => {
               if (btn === 'C') clear();
-              else if (btn === '←') setDisplay(prev => prev.length > 1 && prev !== 'Error' ? prev.slice(0, -1) : '0');
+              else if (btn === '←') {
+                setDisplay(prev => {
+                  if (prev === 'Error') return '0';
+                  const input = inputRef.current;
+                  if (input && input.selectionStart !== null && input.selectionStart > 0) {
+                    const start = input.selectionStart;
+                    const end = input.selectionEnd || start;
+                    if (start === end) {
+                      const newStr = prev.slice(0, start - 1) + prev.slice(end);
+                      setTimeout(() => { input.setSelectionRange(start - 1, start - 1); input.focus(); }, 0);
+                      return newStr || '0';
+                    } else {
+                      const newStr = prev.slice(0, start) + prev.slice(end);
+                      setTimeout(() => { input.setSelectionRange(start, start); input.focus(); }, 0);
+                      return newStr || '0';
+                    }
+                  }
+                  return prev.length > 1 ? prev.slice(0, -1) : '0';
+                });
+              }
               else appendNum(btn);
             }}>{btn}</button>
           ))}

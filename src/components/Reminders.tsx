@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { t, type Lang } from '../i18n/texts';
+import { useModal } from '../contexts/ModalContext';
 
 interface Reminder {
   id: number;
@@ -12,6 +13,7 @@ interface Reminder {
 
 export default function Reminders() {
   const { timerSound, volume, dndMode, language } = useSettings();
+  const modal = useModal();
   const [reminders, setReminders] = useState<Reminder[]>(() => {
     const saved = localStorage.getItem('flowdesk-reminders');
     return saved ? JSON.parse(saved) : [];
@@ -102,7 +104,7 @@ export default function Reminders() {
         {reminders.length > 0 && (
           <button 
             className="win-btn close" 
-            onClick={() => { if(confirm(t(language as Lang, 'clearRemindersConfirm'))) setReminders([]) }}
+            onClick={async () => { if(await modal.confirm(t(language as Lang, 'clearRemindersConfirm'))) setReminders([]) }}
             title={t(language as Lang, 'clear')}
           >
             <Trash2 size={16} />

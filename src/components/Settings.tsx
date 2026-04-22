@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { Palette, Volume2, Keyboard, PenTool, Package, CheckCircle, DownloadCloud, Trash2 } from 'lucide-react';
 import { t, type Lang } from '../i18n/texts';
+import { useModal } from '../contexts/ModalContext';
 
 const Settings: React.FC = () => {
-  const { theme, customAccent, volume, timerSound, shortcuts, activeTools, updateSettings, pomodoroWork, pomodoroBreak, pomodoroEnabled, language } = useSettings();
+  const { theme, customAccent, volume, timerSound, shortcuts, activeTools, autoUpdate, updateSettings, pomodoroWork, pomodoroBreak, pomodoroEnabled, language } = useSettings();
   const [activeTab, setActiveTab] = useState<'interface' | 'sound' | 'hotkeys' | 'tools' | 'dlc'>('interface');
   const [localShortcuts, setLocalShortcuts] = useState(shortcuts);
+  const modal = useModal();
 
-  const resetAllSettings = () => {
-    if (confirm('Сбросить все настройки к стандартным?')) {
+  const resetAllSettings = async () => {
+    if (await modal.confirm(t(language as Lang, 'confirmResetSettings'))) {
       const defaultState = {
         theme: 'dark' as const,
         customAccent: null,
@@ -40,8 +42,8 @@ const Settings: React.FC = () => {
     }
   };
 
-  const resetHotkeys = () => {
-    if (confirm('Очистить все горячие клавиши?')) {
+  const resetHotkeys = async () => {
+    if (await modal.confirm(t(language as Lang, 'confirmResetShortcuts'))) {
       const defaultShortcuts = { toggleApp: '', openCalc: '', openStopwatch: '', openMinitimer: '', openReminders: '' };
       setLocalShortcuts(defaultShortcuts);
       updateSettings({ shortcuts: defaultShortcuts });
@@ -104,9 +106,12 @@ const Settings: React.FC = () => {
       </div>
 
       <h3 style={{marginBottom: '10px'}}>{t(language as Lang, 'aboutApp')}</h3>
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button className="action-btn active" onClick={() => alert(t(language as Lang, 'upToDateApp'))}>{t(language as Lang, 'checkUpdates')}</button>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
+        <button className="action-btn active" onClick={() => modal.confirm({ message: t(language as Lang, 'upToDateApp'), cancelText: ' ' })}>{t(language as Lang, 'checkUpdates')}</button>
         <button className="action-btn outline" onClick={() => window.dispatchEvent(new Event('trigger-onboarding'))}>{t(language as Lang, 'launchTutorial')}</button>
+      </div>
+      <div style={{ marginBottom: '20px', fontSize: '0.85em', color: 'var(--text-muted)' }}>
+        {t(language as Lang, 'currentVersion')} 1.0.2
       </div>
 
       <h3 style={{marginBottom: '10px'}}>{t(language as Lang, 'interfaceLanguage')}</h3>
@@ -122,7 +127,7 @@ const Settings: React.FC = () => {
       </div>
 
       <h3 style={{marginBottom: '10px'}}>{t(language as Lang, 'systemSettings')}</h3>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '20px' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '10px' }}>
         <input 
           type="checkbox" 
           checked={useSettings().runAtStartup} 
@@ -130,6 +135,16 @@ const Settings: React.FC = () => {
           style={{ accentColor: 'var(--accent)', width: '16px', height: '16px' }}
         />
         {t(language as Lang, 'runAtStartup')}
+      </label>
+      
+      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '20px' }}>
+        <input 
+          type="checkbox" 
+          checked={autoUpdate} 
+          onChange={(e) => updateSettings({ autoUpdate: e.target.checked })}
+          style={{ accentColor: 'var(--accent)', width: '16px', height: '16px' }}
+        />
+        {t(language as Lang, 'autoUpdateSettings')}
       </label>
 
       <div style={{ marginBottom: '20px' }}>
@@ -359,9 +374,9 @@ const Settings: React.FC = () => {
     }, 2500);
   };
 
-  const removeDlc = (id: string) => {
-    if (confirm(t(language as Lang, 'confirmRemoveDlc'))) {
-      updateSettings({ activeTools: { ...activeTools, [id]: false } });
+  const handleRemoveDlc = async (dlcId: keyof typeof activeTools) => {
+    if (await modal.confirm(t(language as Lang, 'confirmRemoveDlc'))) {
+      updateSettings({ activeTools: { ...activeTools, [dlcId]: false } });
     }
   };
 
@@ -396,7 +411,7 @@ const Settings: React.FC = () => {
               </div>
               <div>
                 {item.isInstalled ? (
-                  <button className="action-btn outline-danger" onClick={() => removeDlc(item.id)} style={{ padding: '4px 10px', fontSize: '0.85em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <button className="action-btn outline-danger" onClick={() => handleRemoveDlc(item.id as keyof typeof activeTools)} style={{ padding: '4px 10px', fontSize: '0.85em', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <Trash2 size={14} /> {t(language as Lang, 'remove')}
                   </button>
                 ) : downloading === item.id ? (

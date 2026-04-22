@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { t, type Lang } from '../i18n/texts';
+import { useModal } from '../contexts/ModalContext';
 
 interface Task {
   id: number;
@@ -12,6 +13,7 @@ interface Task {
 
 export default function Tasks() {
   const { language } = useSettings();
+  const modal = useModal();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [inputText, setInputText] = useState('');
 
@@ -49,8 +51,8 @@ export default function Tasks() {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
-  const clearAll = () => {
-    if (window.confirm(t(language as Lang, 'clearTasksConfirm'))) {
+  const clearAll = async () => {
+    if (await modal.confirm(t(language as Lang, 'clearTasksConfirm'))) {
       setTasks([]);
     }
   };

@@ -102,7 +102,7 @@ export default function Onboarding() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
                 className={`panel ${language === 'en' ? 'active' : ''}`}
-                style={{ flex: 1, padding: '20px', cursor: 'pointer', border: language === 'en' ? '2px solid var(--accent)' : '1px solid var(--glass-border)' }}
+                style={{ flex: 1, padding: '20px', cursor: 'pointer', border: language === 'en' ? '2px solid var(--accent)' : '1px solid var(--glass-border)', color: 'var(--text-main)' }}
                 onClick={() => updateSettings({ language: 'en' })}
               >
                 <div style={{ fontSize: '2em', marginBottom: '10px' }}>🇬🇧</div>
@@ -111,7 +111,7 @@ export default function Onboarding() {
               
               <button 
                 className={`panel ${language === 'ru' ? 'active' : ''}`}
-                style={{ flex: 1, padding: '20px', cursor: 'pointer', border: language === 'ru' ? '2px solid var(--accent)' : '1px solid var(--glass-border)' }}
+                style={{ flex: 1, padding: '20px', cursor: 'pointer', border: language === 'ru' ? '2px solid var(--accent)' : '1px solid var(--glass-border)', color: 'var(--text-main)' }}
                 onClick={() => updateSettings({ language: 'ru' })}
               >
                 <div style={{ fontSize: '2em', marginBottom: '10px' }}>🇷🇺</div>
