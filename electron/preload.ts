@@ -18,4 +18,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showNotification: (title: string, body: string) => ipcRenderer.send('show-notification', title, body),
   setStartupMode: (runOnStartup: boolean) => ipcRenderer.send('set-startup-mode', runOnStartup),
   setMiniMode: (isMini: boolean) => ipcRenderer.send('set-mini-mode', isMini),
+  checkUpdates: () => ipcRenderer.invoke('check-updates'),
 })

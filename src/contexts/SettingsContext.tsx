@@ -1,14 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const getContrastYIQ = (hexcolor: string) => {
-  const hex = hexcolor.replace("#", "");
-  const r = parseInt(hex.substring(0,2), 16);
-  const g = parseInt(hex.substring(2,4), 16);
-  const b = parseInt(hex.substring(4,6), 16);
-  const yiq = ((r*299)+(g*587)+(b*114))/1000;
-  return (yiq >= 128) ? '#000000' : '#ffffff';
-};
-
 export type Theme = 'dark' | 'light' | 'soft';
 
 export interface SettingsState {
@@ -126,11 +117,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       root.style.setProperty('--accent', settings.customAccent);
       // Generate a slightly transparent version for glow
       root.style.setProperty('--accent-glow', settings.customAccent + '80');
-      root.style.setProperty('--accent-text', getContrastYIQ(settings.customAccent));
     } else {
       root.style.removeProperty('--accent');
       root.style.removeProperty('--accent-glow');
-      root.style.removeProperty('--accent-text');
     }
     // Set opacity
     root.style.setProperty('--bg-opacity', settings.bgOpacity.toString());

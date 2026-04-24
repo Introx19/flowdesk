@@ -88,6 +88,19 @@ app.whenReady().then(() => {
   }
 })
 
+ipcMain.handle('check-updates', async () => {
+  if (!app.isPackaged) return { status: 'dev' };
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    if (result && result.updateInfo.version !== app.getVersion()) {
+      return { status: 'available', version: result.updateInfo.version };
+    }
+    return { status: 'latest' };
+  } catch (e) {
+    return { status: 'error' };
+  }
+});
+
 app.on('will-quit', () => {
   globalShortcut.unregisterAll()
 })

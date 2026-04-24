@@ -20,6 +20,14 @@ export default function Notes() {
     const oldText = localStorage.getItem('flowdesk-note') || '';
     return oldText; 
   });
+  const initialLoadRef = useRef(false);
+
+  useEffect(() => {
+    if (editorRef.current && !initialLoadRef.current) {
+      editorRef.current.innerHTML = noteHTML;
+      initialLoadRef.current = true;
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('flowdesk-note-html', noteHTML);
@@ -149,7 +157,6 @@ export default function Notes() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: noteHTML }}
         style={{
           flex: 1,
           padding: '15px',

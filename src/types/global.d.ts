@@ -14,6 +14,7 @@ export interface ElectronAPI {
   showNotification: (title: string, body: string) => void;
   setStartupMode: (runOnStartup: boolean) => void;
   setMiniMode: (isMini: boolean) => void;
+  checkUpdates: () => Promise<{ status: 'dev' | 'available' | 'latest' | 'error', version?: string }>;
 }
 
 declare global {

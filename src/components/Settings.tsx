@@ -10,6 +10,23 @@ const Settings: React.FC = () => {
   const [localShortcuts, setLocalShortcuts] = useState(shortcuts);
   const modal = useModal();
 
+  const handleCheckUpdates = async () => {
+    if (window.electronAPI) {
+      const res = await window.electronAPI.checkUpdates();
+      if (res.status === 'dev') {
+        modal.confirm({ message: t(language as Lang, 'upToDateApp'), hideCancel: true });
+      } else if (res.status === 'available') {
+        modal.confirm({ message: `Update available: ${res.version}. Downloading in background...`, hideCancel: true });
+      } else if (res.status === 'latest') {
+        modal.confirm({ message: t(language as Lang, 'upToDateApp'), hideCancel: true });
+      } else {
+        modal.confirm({ message: 'Error checking for updates.', hideCancel: true });
+      }
+    } else {
+       modal.confirm({ message: t(language as Lang, 'upToDateApp'), hideCancel: true });
+    }
+  };
+
   const resetAllSettings = async () => {
     if (await modal.confirm(t(language as Lang, 'confirmResetSettings'))) {
       const defaultState = {
@@ -61,6 +78,20 @@ const Settings: React.FC = () => {
     }
   };
 
+  const playTestSound = () => {
+    let audioSrc = '';
+    if (timerSound === 'bell') {
+      audioSrc = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
+    } else if (timerSound === 'digital') {
+      audioSrc = 'https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3';
+    } else {
+      audioSrc = `media:///${timerSound.replace(/\\/g, '/')}`;
+    }
+    const audio = new Audio(audioSrc);
+    audio.volume = volume / 100;
+    audio.play().catch(console.error);
+  };
+
   const handleShortcutChange = (shortcutName: keyof typeof shortcuts, e: React.KeyboardEvent) => {
     e.preventDefault();
     const keys = [];
@@ -107,11 +138,11 @@ const Settings: React.FC = () => {
 
       <h3 style={{marginBottom: '10px'}}>{t(language as Lang, 'aboutApp')}</h3>
       <div style={{ display: 'flex', gap: '10px', marginBottom: '5px' }}>
-        <button className="action-btn active" onClick={() => modal.confirm({ message: t(language as Lang, 'upToDateApp'), cancelText: ' ' })}>{t(language as Lang, 'checkUpdates')}</button>
+        <button className="action-btn active" onClick={handleCheckUpdates}>{t(language as Lang, 'checkUpdates')}</button>
         <button className="action-btn outline" onClick={() => window.dispatchEvent(new Event('trigger-onboarding'))}>{t(language as Lang, 'launchTutorial')}</button>
       </div>
       <div style={{ marginBottom: '20px', fontSize: '0.85em', color: 'var(--text-muted)' }}>
-        {t(language as Lang, 'currentVersion')} 1.0.2
+        {t(language as Lang, 'currentVersion')} 1.0.3
       </div>
 
       <h3 style={{marginBottom: '10px'}}>{t(language as Lang, 'interfaceLanguage')}</h3>
@@ -165,6 +196,8 @@ const Settings: React.FC = () => {
           max="100" 
           value={volume} 
           onChange={(e) => updateSettings({ volume: parseInt(e.target.value) })}
+          onMouseUp={playTestSound}
+          onTouchEnd={playTestSound}
           style={{ flex: 1, accentColor: 'var(--accent)' }}
         />
         <span style={{ width: '30px', textAlign: 'right' }}>{volume}%</span>

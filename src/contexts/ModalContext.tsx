@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useSettings } from './SettingsContext';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 
 interface ModalOptions {
   message: string;
   title?: string;
   okText?: string;
   cancelText?: string;
+  hideCancel?: boolean;
 }
 
 interface ModalContextType {
@@ -74,9 +74,11 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
               {modalState.options.message}
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button className="action-btn outline" onClick={() => handleClose(false)}>
-                {modalState.options.cancelText || 'Cancel'}
-              </button>
+              {!modalState.options.hideCancel && (
+                <button className="action-btn outline" onClick={() => handleClose(false)}>
+                  {modalState.options.cancelText || 'Cancel'}
+                </button>
+              )}
               <button className="btn btn-primary" onClick={() => handleClose(true)}>
                 {modalState.options.okText || 'OK'}
               </button>

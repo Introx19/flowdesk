@@ -433,7 +433,7 @@
         {
           "name": "Coulomb's Law",
           "formula": "F = k · (|q₁|·|q₂|) / r²",
-          "description": "Сила взаимодействия двух точечных заряbeforeв"
+          "description": "Interaction force of two point charges"
         },
         {
           "name": "Ohm's Law (Section)",
@@ -483,11 +483,11 @@
         {
           "name": "Amount of Substance",
           "formula": "n = m / M = V / Vₘ = N / Nₐ",
-          "description": "Vₘ = 22.4 л/моль (STP), Nₐ = 6.02 × 10²³"
+          "description": "Vₘ = 22.4 L/mol (STP), Nₐ = 6.02 × 10²³"
         },
         {
           "name": "Mass Fraction",
-          "formula": "ω = m(в-ва) / m(р-ра) · 100%",
+          "formula": "ω = m(substance) / m(solution) · 100%",
           "description": "Percentage concentration in solution"
         }
       ]
