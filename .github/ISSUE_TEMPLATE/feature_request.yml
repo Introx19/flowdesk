@@ -1,0 +1,31 @@
+﻿name: "💡 Feature Request / Предложение новой функции"
+description: "Suggest a new idea, tool, or DLC for TesseraDesk"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Есть классная идея для нового DLC или улучшения интерфейса? Опишите её!
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Какую проблему решает эта функция? / Problem Description"
+      placeholder: "Мне часто не хватает инструмента для..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Предлагаемое решение / Proposed Solution"
+      description: "Как именно это должно работать и выглядеть?"
+      placeholder: "Добавить новый DLC '...', в котором будет возможность..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Альтернативы или референсы / Alternatives"
+      placeholder: "Видел подобное в приложении X / скриншот референса..."
+    validations:
+      required: false

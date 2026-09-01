@@ -1,0 +1,66 @@
+﻿name: "🐛 Bug Report / Сообщение об ошибке"
+description: "Report a bug or unexpected behavior in TesseraDesk"
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что помогаете делать TesseraDesk лучше! Пожалуйста, заполните форму ниже.
+  - type: dropdown
+    id: version
+    attributes:
+      label: "Версия приложения / App Version"
+      description: "Какую версию TesseraDesk вы используете?"
+      options:
+        - "v1.8.3 (Latest)"
+        - "v1.8.2"
+        - "v1.8.1"
+        - "v1.8.0"
+        - "Другая / Other"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: "Операционная система / OS"
+      options:
+        - "Windows 11"
+        - "Windows 10"
+        - "Linux"
+        - "macOS"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Описание проблемы / Description"
+      description: "Что именно пошло не так?"
+      placeholder: "При нажатии на кнопку X окно закрывается / белый экран..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Шаги для воспроизведения / Steps to Reproduce"
+      description: "Как повторить эту ошибку?"
+      placeholder: |
+        1. Открыть инструмент '...'
+        2. Нажать на '...'
+        3. Увидеть ошибку '...'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Ожидаемое поведение / Expected Behavior"
+      placeholder: "Что должно было произойти?"
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots_or_logs
+    attributes:
+      label: "Скриншоты или логи консоли (F12) / Screenshots or Console Logs"
+      placeholder: "Прикрепите скриншот или скопируйте текст ошибки из консоли (F12)..."
+    validations:
+      required: false
