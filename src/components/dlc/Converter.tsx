@@ -1,9 +1,9 @@
+import InfoButton from '../InfoButton';
 import React, { useState, useEffect } from 'react';
 import { t, type Lang } from '../../i18n/texts';
 import { ArrowRightLeft } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Scale } from 'lucide-react';
-import InfoButton from '../InfoButton';
 
 type Category = 'length' | 'mass' | 'temp' | 'data' | 'area' | 'speed' | 'volume' | 'currency';
 
@@ -238,7 +238,8 @@ const Converter: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Scale size={24} color="var(--accent)" />
           {t(language as Lang, 'dlc_converter_name')}
-          <InfoButton text={t(language as Lang, 'dlc_converter_desc' as any) || 'Unit converter'} />
+          <InfoButton text={language === 'ru' ? 'Универсальный конвертер единиц: длина, вес, температура, скорость, валюты и данные.' : 'Universal unit converter: length, weight, temperature, speed, currency, and data.'} />
+          
         </div>
         {cat === 'currency' && lastUpdate && (
           <span style={{ fontSize: '0.45em', color: 'var(--text-muted)', fontWeight: 'normal' }}>

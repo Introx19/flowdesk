@@ -1,3 +1,4 @@
+import InfoButton from './InfoButton';
 import { useState, useEffect } from 'react';
 import { useWindowSize } from '../hooks/useWindowSize';
 import { useSettings } from '../contexts/SettingsContext';
@@ -63,7 +64,10 @@ export default function Stopwatch() {
   if (isMd) {
     return (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '12px', gap: '12px', overflow: 'hidden' }}>
-        <h2 style={{ fontSize: '0.9em', margin: 0, color: 'var(--text-muted)' }}>{t(language as Lang, 'stopwatch')}</h2>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '0.9em', margin: 0, color: 'var(--text-muted)' }}>{t(language as Lang, 'stopwatch')}</h2>
+          <InfoButton text={language === 'ru' ? 'Высокоточный секундомер с фиксацией и сохранением кругов.' : 'High-precision stopwatch with lap recording and lap timing.'} />
+        </div>
         <div style={{ fontSize: clockSize, fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent)', lineHeight: 1 }}>
           {formatTime(time)}
         </div>

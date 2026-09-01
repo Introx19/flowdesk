@@ -1,10 +1,10 @@
+import InfoButton from '../InfoButton';
 import { useState, useMemo } from 'react';
 import { Search, Copy, CheckCircle2 } from 'lucide-react';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import formulasData from './formulas.json';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
-import InfoButton from '../InfoButton';
 
 interface FormulaItem {
   name: string;
@@ -55,7 +55,8 @@ export default function Formulas() {
         <div style={{ padding: '15px 15px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             {t(language as Lang, 'formulas')}
-            <InfoButton text={t(language as Lang, 'dlc_formulas_desc' as any) || 'Cheat Sheets'} />
+            <InfoButton text={language === 'ru' ? 'Шпаргалка формул по математике, физике и геометрии с быстрым поиском.' : 'Offline reference of formulas (Math, Physics, Geometry) with instant search.'} />
+            
           </h2>
         </div>
       )}

@@ -1,10 +1,10 @@
+import InfoButton from '../InfoButton';
 import { useState } from 'react';
 import elementsData from './elements.json';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
 import { elementNamesRu } from './elementTranslations';
-import InfoButton from '../InfoButton';
 
 const categoryRu: Record<string, string> = {
   'noble gas': 'Благородный газ',
@@ -75,7 +75,8 @@ export default function PeriodicTable() {
       {!isSm && (
         <h2 style={{ padding: '15px 20px 0', margin: 0, borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           {t(language as Lang, 'periodicTableTitle')}
-          <InfoButton text={t(language as Lang, 'dlc_periodicTable_desc' as any) || 'Periodic Table'} />
+          <InfoButton text={language === 'ru' ? 'Интерактивная таблица Менделеева с детальными характеристиками каждого химического элемента.' : 'Interactive Periodic Table with comprehensive chemical and physical properties.'} />
+          
         </h2>
       )}
 

@@ -105,7 +105,20 @@ if (!gotTheLock) {
 
     // Auto-update: only check when packaged (not in dev)
     if (app.isPackaged) {
-      autoUpdater.checkForUpdatesAndNotify();
+      autoUpdater.autoDownload = false;
+      autoUpdater.on('update-available', (info) => {
+        mainWindow?.webContents.send('update-available', info);
+      });
+      autoUpdater.on('download-progress', (progress) => {
+        mainWindow?.webContents.send('download-progress', progress);
+      });
+      autoUpdater.on('update-downloaded', (info) => {
+        mainWindow?.webContents.send('update-downloaded', info);
+      });
+      autoUpdater.on('error', (err) => {
+        mainWindow?.webContents.send('update-error', err?.message || 'Update error');
+      });
+      autoUpdater.checkForUpdates();
     }
   });
 }
@@ -121,6 +134,15 @@ ipcMain.handle('check-updates', async () => {
   } catch (e) {
     return { status: 'error' };
   }
+});
+
+ipcMain.on('download-update', () => {
+  autoUpdater.downloadUpdate();
+});
+
+ipcMain.on('install-update', () => {
+  // Silent background update into the existing directory, then relaunch
+  autoUpdater.quitAndInstall(true, true);
 });
 
 app.on('will-quit', () => {
@@ -1159,3 +1181,96 @@ REVISED:
 ipcMain.on('open-external', (event, url) => {
   shell.openExternal(url);
 });
+
+// ==========================================
+// ⚡ AUTOCLICKER
+// ==========================================
+let autoclickerIntervalId: any = null;
+let autoclickerActive = false;
+let currentAutoclickerHotkey = '';
+let currentAutoclickerConfig = {
+  interval: 100,
+  intervalUnit: 'ms' as 'ms' | 's' | 'm',
+  button: 'left' as 'left' | 'right' | 'middle',
+  randomizeMs: 0
+};
+
+function broadcastAutoclickerState(isActive: boolean) {
+  try {
+    mainWindow?.webContents.send('autoclicker-state-changed', isActive);
+    if (toolWindows['autoclicker'] && !toolWindows['autoclicker'].isDestroyed()) {
+      toolWindows['autoclicker'].webContents.send('autoclicker-state-changed', isActive);
+    }
+  } catch (e) {}
+}
+
+function getAutoclickerDelay(): number {
+  let base = currentAutoclickerConfig.interval || 100;
+  if (currentAutoclickerConfig.intervalUnit === 's') base *= 1000;
+  if (currentAutoclickerConfig.intervalUnit === 'm') base *= 60000;
+  if (currentAutoclickerConfig.randomizeMs > 0) {
+    const delta = (Math.random() * 2 - 1) * currentAutoclickerConfig.randomizeMs;
+    base = Math.max(1, base + delta);
+  }
+  return Math.max(1, Math.round(base));
+}
+
+function executeAutoclick() {
+  if (!autoclickerActive) return;
+  try {
+    const btn = currentAutoclickerConfig.button || 'left';
+    robot.mouseClick(btn);
+  } catch (err) {
+    console.error('Autoclicker error:', err);
+  }
+  if (autoclickerActive) {
+    autoclickerIntervalId = setTimeout(executeAutoclick, getAutoclickerDelay());
+  }
+}
+
+function startAutoclicker() {
+  if (autoclickerActive) return;
+  autoclickerActive = true;
+  broadcastAutoclickerState(true);
+  executeAutoclick();
+}
+
+function stopAutoclicker() {
+  if (!autoclickerActive) return;
+  autoclickerActive = false;
+  if (autoclickerIntervalId) {
+    clearTimeout(autoclickerIntervalId);
+    autoclickerIntervalId = null;
+  }
+  broadcastAutoclickerState(false);
+}
+
+function toggleAutoclicker() {
+  if (autoclickerActive) {
+    stopAutoclicker();
+  } else {
+    startAutoclicker();
+  }
+}
+
+ipcMain.on('set-autoclicker-config', (event, hotkey, interval, intervalUnit, button, randomizeMs) => {
+  currentAutoclickerConfig = { interval, intervalUnit, button, randomizeMs };
+  if (hotkey !== currentAutoclickerHotkey) {
+    if (currentAutoclickerHotkey) {
+      try { globalShortcut.unregister(currentAutoclickerHotkey); } catch (e) {}
+    }
+    currentAutoclickerHotkey = hotkey;
+    if (hotkey) {
+      try {
+        globalShortcut.register(hotkey, () => {
+          toggleAutoclicker();
+        });
+      } catch (err) {
+        console.error('Failed to register autoclicker shortcut:', err);
+      }
+    }
+  }
+});
+
+
+

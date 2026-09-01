@@ -1,10 +1,10 @@
+import InfoButton from '../InfoButton';
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Keyboard, Type, Settings, Play, Square, AlertCircle } from 'lucide-react';
-import InfoButton from '../InfoButton';
 
 const HumanTyper: React.FC = () => {
-  const { updateSettings, humanTyperSpeed, humanTyperErrors, humanTyperThinkPct, humanTyperStartHotkey, humanTyperStopHotkey } = useSettings();
+  const { language, updateSettings, humanTyperSpeed, humanTyperErrors, humanTyperThinkPct, humanTyperStartHotkey, humanTyperStopHotkey } = useSettings();
   const [isActive, setIsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [localText, setLocalText] = useState('');
@@ -41,6 +41,7 @@ const HumanTyper: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Keyboard size={20} className="tool-icon" />
           <h2>Human Typer</h2>
+          <InfoButton text={language === 'ru' ? 'Human Typer имитирует реальную печать текста человеком с опечатками, паузами и исправлениями.' : 'Simulates authentic human typing with typos, backspace corrections, and natural thinking pauses.'} />
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
@@ -50,9 +51,7 @@ const HumanTyper: React.FC = () => {
           >
             <Settings size={18} />
           </button>
-          <InfoButton 
-            text="Human Typer имитирует реальную печать текста человеком. Он совершает опечатки, стирает их, и делает паузы между предложениями. Вы можете скопировать любой текст в буфер обмена и нажать глобальный хоткей для старта вне приложения."
-          />
+          
         </div>
       </div>
 

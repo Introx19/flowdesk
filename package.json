@@ -2,7 +2,7 @@
   "name": "tesseradesk",
   "private": true,
   "main": "dist-electron/main.js",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "description": "Professional desktop utility suite with productivity tools, scientific modules, and smart screen capture.",
   "type": "module",
   "scripts": {
@@ -59,12 +59,14 @@
       "dist-electron/**/*"
     ],
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "TesseraDesk"
+      "shortcutName": "TesseraDesk",
+      "uninstallDisplayName": "TesseraDesk"
     },
     "win": {
       "target": [

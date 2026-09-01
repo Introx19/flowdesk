@@ -1,8 +1,8 @@
+import InfoButton from '../InfoButton';
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { translations } from '../../i18n/texts';
 import { MousePointerClick } from 'lucide-react';
-import InfoButton from '../InfoButton';
 
 type Lang = 'en' | 'ru';
 const t = (lang: Lang, key: keyof typeof translations['en']) => translations[lang][key] || translations['en'][key];
@@ -72,7 +72,8 @@ export default function AutoClicker() {
       <div className="tool-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <MousePointerClick size={20} />
         <span className="tool-title">{t(language as Lang, 'autoclicker')}</span>
-        <InfoButton text={t(language as Lang, 'dlc_autoclicker_desc' as any) || 'Simulate rapid mouse clicks at a specific interval.'} />
+        <InfoButton text={language === 'ru' ? 'Автоматический высокоскоростной кликер с настройкой задержки и рандомизации.' : 'Automated high-speed clicker with customizable intervals and random variance.'} />
+        
       </div>
 
       <div className="tool-content" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>

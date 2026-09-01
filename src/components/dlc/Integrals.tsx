@@ -1,3 +1,4 @@
+import InfoButton from '../InfoButton';
 import { useState, useRef } from 'react';
 import { Copy } from 'lucide-react';
 import nerdamer from 'nerdamer';
@@ -5,7 +6,6 @@ import 'nerdamer/Algebra';
 import 'nerdamer/Calculus';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
-import InfoButton from '../InfoButton';
 
 export default function Integrals() {
   const { language } = useSettings();
@@ -113,7 +113,8 @@ export default function Integrals() {
     <div className="panel" style={{ height: '100%', padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
       <h2 style={{ margin: '0', color: 'var(--text-main)', fontSize: '1.2em', display: 'flex', alignItems: 'center', gap: '8px' }}>
         {t(language as Lang, 'integralsTitle')}
-        <InfoButton text={t(language as Lang, 'dlc_integrals_desc' as any) || 'Math Solver'} />
+        <InfoButton text={language === 'ru' ? 'Справочник интегралов, производных и математических преобразований.' : 'Reference guide for integrals, derivatives, and mathematical transformations.'} />
+        
       </h2>
       <p style={{ margin: 0, fontSize: '0.85em', color: 'var(--text-muted)' }}>{t(language as Lang, 'integralsDesc')}</p>
       

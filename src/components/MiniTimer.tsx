@@ -1,3 +1,4 @@
+import InfoButton from './InfoButton';
 import { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -131,7 +132,10 @@ export default function MiniTimer() {
   if (isMd) {
     return (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '12px', gap: '12px', overflow: 'hidden' }}>
-        <h2 style={{ fontSize: '0.9em', margin: 0, color: 'var(--text-muted)' }}>{t(language as Lang, 'minitimer')}</h2>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '0.9em', margin: 0, color: 'var(--text-muted)' }}>{t(language as Lang, 'minitimer')}</h2>
+          <InfoButton text={language === 'ru' ? 'Таймер обратного отсчёта и режим фокусировки Pomodoro со звуковыми сигналами.' : 'Countdown timer and Pomodoro focus tracker with audio alerts.'} />
+        </div>
         <div style={{ fontSize: clockSize, fontWeight: 700, fontFamily: 'monospace', color: isFinished ? '#ff3333' : 'var(--accent)', lineHeight: 1 }}>
           {isFinished ? '00:00' : (timeLeft > 0 ? formatTime(timeLeft) : '00:00')}
         </div>

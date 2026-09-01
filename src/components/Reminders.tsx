@@ -1,3 +1,4 @@
+import InfoButton from './InfoButton';
 import { useState, useEffect } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
@@ -100,7 +101,10 @@ export default function Reminders() {
   return (
     <div className="panel" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>{t(language as Lang, 'reminders')}</h2>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+            <h2 style={{ margin: 0 }}>{t(language as Lang, 'reminders')}</h2>
+            <InfoButton text={language === 'ru' ? 'Планировщик напоминаний с интеграцией всплывающих уведомлений.' : 'Scheduled reminder alerts with custom toast popups.'} />
+          </div>
         {reminders.length > 0 && (
           <button 
             className="win-btn close" 

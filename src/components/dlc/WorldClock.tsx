@@ -1,10 +1,10 @@
+import InfoButton from '../InfoButton';
 import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Clock as ClockIcon, Globe } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import ct from 'countries-and-timezones';
-import InfoButton from '../InfoButton';
 
 // Timezones will be generated dynamically using Intl API
 const cityTranslations: Record<string, string> = {
@@ -166,7 +166,8 @@ export default function WorldClock() {
           <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Globe size={24} color="var(--accent)" />
             {t(language as Lang, 'dlc_worldClock_name' as any) || 'World Clock'}
-            <InfoButton text={t(language as Lang, 'dlc_worldClock_desc' as any) || 'World Clock'} />
+            <InfoButton text={language === 'ru' ? 'Мировое время и часовые пояса ключевых столиц и городов.' : 'World clock and timezone tracker for major global cities.'} />
+            
           </h2>
           <button className="win-btn" onClick={() => setShowAdd(!showAdd)} title={t(language as Lang, 'add' as any) || 'Add'}>
             <Plus size={16} />

@@ -1,25 +1,23 @@
 import { X, Sparkles } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
-const CURRENT_VERSION = '1.8.3';
+const CURRENT_VERSION = '1.8.4';
 
 export default function WhatsNewModal({ onClose }: { onClose: () => void }) {
   const { language } = useSettings();
   
   const items = language === 'ru' ? [
-    { icon: '🤖', title: 'Super Humanizer', desc: 'Новый DLC — AI-студия для очеловечивания текста и обхода AI-детекторов. Режим маскировки (F9), AI Scan, 6 стилей письма.' },
-    { icon: '⌨️', title: 'Human Typer', desc: 'Новый DLC — имитирует живую печать человека с опечатками и паузами. Работает глобально через хоткей даже вне приложения.' },
-    { icon: '📚', title: 'Библиотека DLC + Drag & Drop', desc: 'Полный рефакторинг таскбара: три зоны, перетаскивание иконок с индикаторами, кнопка Сброс, защита служебных кнопок.' },
-    { icon: '🪟', title: 'Умный ресайз окон', desc: 'Окно больше не блокируется при смене плагина. Каждый инструмент автоматически устанавливает свой минимальный размер.' },
-    { icon: '🖼️', title: 'Графический редактор восстановлен', desc: 'Image Editor сломался во время обновления — полностью восстановлен и улучшен.' },
-    { icon: '🐛', title: 'Исправления и полировка', desc: 'Починены скриншоты, Import в Заметках, краши Dev Tools. Убраны виндовые select-ы. Умные углы при максимизации окна.' },
+    { icon: '⚡', title: 'Починен Автокликер и Human Typer', desc: 'Автокликер и эмулятор печати Human Typer теперь работают идеально на уровне системы с глобальными хоткеями.' },
+    { icon: '📚', title: 'Библиотека в компактном режиме', desc: 'При клике на библиотеку в компактном режиме открывается удобное окно для быстрого запуска любого DLC.' },
+    { icon: '📦', title: 'Установщик с выбором папки', desc: 'При первичной установке доступен выбор папки и ярлыков, а обновления происходят тихо и быстро в фоне.' },
+    { icon: '🪟', title: 'Вертикальные кнопки мини-режима', desc: 'Кнопки выхода из компактного режима выстроены вертикально и легко нажимаются.' },
+    { icon: '🤖', title: 'Super Humanizer v1.0.0', desc: 'AI-студия для очеловечивания текста, обход AI-детекторов, режим маскировки (F9) и соглашение EULA.' },
   ] : [
-    { icon: '🤖', title: 'Super Humanizer', desc: 'New DLC — AI studio for humanizing text & bypassing AI detectors. Stealth mode (F9), AI Scan, 6 writing styles.' },
-    { icon: '⌨️', title: 'Human Typer', desc: 'New DLC — simulates real human typing with typos and pauses. Works globally via hotkey even outside the app.' },
-    { icon: '📚', title: 'DLC Library + Drag & Drop', desc: 'Full taskbar rewrite: three zones, icon drag-and-drop with indicators, Reset button, protected utility buttons.' },
-    { icon: '🪟', title: 'Smart Window Resizing', desc: 'Window no longer locks when switching plugins. Each tool sets its own minimum size without blocking manual resizing.' },
-    { icon: '🖼️', title: 'Image Editor Restored', desc: 'The Image Editor broke during the update — fully restored and improved.' },
-    { icon: '🐛', title: 'Fixes & Polish', desc: 'Fixed screenshots, Notes Import, DevTools crashes. Removed Windows-native selects. Smart corners on maximize.' },
+    { icon: '⚡', title: 'AutoClicker & Human Typer Fixed', desc: 'AutoClicker and Human Typer keystroke simulator now work seamlessly via global hotkeys.' },
+    { icon: '📚', title: 'Library in Compact Mode', desc: 'Clicking the library icon in compact mode now opens a standalone window to easily launch any tool.' },
+    { icon: '📦', title: 'Custom Installer Directory', desc: 'Initial installer allows custom installation path & shortcuts, while updates remain fast and silent in the background.' },
+    { icon: '🪟', title: 'Vertical Compact Mode Controls', desc: 'Controls at the bottom of the compact sidebar are arranged vertically for effortless clicking.' },
+    { icon: '🤖', title: 'Super Humanizer v1.0.0', desc: 'AI ghostwriting studio, AI detector bypass, Stealth Mode (F9), and EULA disclaimer.' },
   ];
 
   return (

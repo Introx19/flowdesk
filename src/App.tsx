@@ -239,6 +239,24 @@ function App() {
   if (hash.includes('numismatics')) return <ToolWindowShell><Numismatics /></ToolWindowShell>;
   if (hash.includes('humanTyper')) return <ToolWindowShell><HumanTyper /></ToolWindowShell>;
   if (hash.includes('superHumanizer')) return <ToolWindowShell><SuperHumanizer /></ToolWindowShell>;
+  if (hash.includes('library')) return (
+    <ToolWindowShell>
+      <Library 
+        onOpenTool={(tool) => {
+          window.electronAPI?.openToolWindow(tool);
+          window.electronAPI?.windowClose();
+        }}
+        openPaint={() => {
+          window.electronAPI?.openPaint();
+          window.electronAPI?.windowClose();
+        }}
+        takeScreenshot={() => {
+          window.electronAPI?.takeScreenshot(multiScreenshot, fastScreenshot, screenshotDelay, saveFastScreenshotDisk, customScreenshotFolder);
+          window.electronAPI?.windowClose();
+        }}
+      />
+    </ToolWindowShell>
+  );
 
   const modal = useModal();
 
@@ -284,30 +302,8 @@ function App() {
     setIsCompact(newCompact);
     setIsMini(false);
     
-    let itemCount = 0;
-    if (activeTools.stopwatch) itemCount++;
-    if (activeTools.minitimer) itemCount++;
-    if (activeTools.reminders) itemCount++;
-    if (activeTools.calc) itemCount++;
-    if (activeTools.tasks) itemCount++;
-    if (activeTools.notes) itemCount++;
-    if (activeTools.periodicTable) itemCount++;
-    if (activeTools.desmos) itemCount++;
-    if (activeTools.formulas) itemCount++;
-    if (activeTools.integrals) itemCount++;
-    if (activeTools.converter) itemCount++;
-    if (activeTools.worldClock) itemCount++;
-    if (activeTools.devTools) itemCount++;
-    if (activeTools.autoclicker) itemCount++;
-    if (activeTools.numismatics) itemCount++;
-    let hasMedia = activeTools.screenshot || activeTools.paint;
-    if (activeTools.screenshot) itemCount++;
-    if (activeTools.paint) itemCount++;
-
-    // 20px chevron + 16px (top+bottom sidebar pad) + itemCount*35 + gaps + bottomBar (42px) + divider
-    // Gaps count = itemCount + 1 (for chevron) + 1 (if bottomBar separated by margin)
-    // Divider is approx 11px
-    const height = 20 + 16 + (itemCount * 35) + ((itemCount > 0 ? itemCount + 1 : 0) * 5) + 42 + (hasMedia ? 16 : 0);
+    const pinnedCount = pinnedOrder ? pinnedOrder.filter(id => pinnedTools?.[id]).length : 0;
+    const height = Math.max(380, 20 + 16 + (Math.max(pinnedCount, 4) * 38) + 120);
 
     if (window.electronAPI) {
         // @ts-ignore (we know height is passed but just in case)
@@ -611,14 +607,14 @@ function App() {
                 <div style={{ width: '30px', height: '1px', background: 'var(--glass-border)', margin: '5px 0' }}></div>
                 {(activeTools.screenshot && pinnedTools.screenshot) && (
                   <div key="screenshot" style={{ width: '100%', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-                    <div className={`nav-item ${(activeTab as string) === 'screenshot' ? 'active' : ''}`} onClick={takeScreenshot} title={t(language as Lang, 'screenshot')}>
+                    <div id="nav-screenshot" className={`nav-item ${(activeTab as string) === 'screenshot' ? 'active' : ''}`} onClick={takeScreenshot} title={t(language as Lang, 'screenshot')}>
                       <Scissors size={18} />
                     </div>
                   </div>
                 )}
                 {(activeTools.paint && pinnedTools.paint) && (
                   <div key="paint" style={{ width: '100%', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-                    <div className={`nav-item ${(activeTab as string) === 'paint' ? 'active' : ''}`} onClick={openPaint} title={t(language as Lang, 'paint')}>
+                    <div id="nav-paint" className={`nav-item ${(activeTab as string) === 'paint' ? 'active' : ''}`} onClick={openPaint} title={t(language as Lang, 'paint')}>
                       <Palette size={18} />
                     </div>
                   </div>
@@ -676,20 +672,24 @@ function App() {
               flexShrink: 0,
               width: '100%',
               padding: '8px 0 10px',
-              marginTop: '5px',
+              marginTop: 'auto',
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
               background: 'transparent',
               borderTop: '1px solid var(--glass-border)'
             }}>
-              <button className="win-btn" onClick={toggleCompact} title={t(language as Lang, 'expand')}><PanelRightClose size={16} /></button>
-              <div className="titlebar-controls" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                <button className="win-btn minimize" onClick={() => window.electronAPI?.windowMinimize()} style={{ width: '24px', height: '24px' }} title="Minimize"><Minus size={12} /></button>
-                <button className="win-btn close" onClick={() => window.electronAPI?.windowClose()} style={{ width: '24px', height: '24px' }} title={t(language as Lang, 'close')}><X size={12} /></button>
-              </div>
+              <button className="win-btn" onClick={toggleCompact} title={t(language as Lang, 'expand')} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PanelRightClose size={16} />
+              </button>
+              <button className="win-btn minimize" onClick={() => window.electronAPI?.windowMinimize()} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Minimize">
+                <Minus size={14} />
+              </button>
+              <button className="win-btn close" onClick={() => window.electronAPI?.windowClose()} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t(language as Lang, 'close')}>
+                <X size={14} />
+              </button>
             </div>
           )}
         </div>

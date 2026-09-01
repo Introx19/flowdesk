@@ -1,3 +1,4 @@
+import InfoButton from './InfoButton';
 import { useState, useEffect } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
@@ -66,6 +67,7 @@ export default function Tasks() {
     <div className="panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>{t(language as Lang, 'tasks')}</h2>
+          <InfoButton text={language === 'ru' ? 'Список задач и планов с фильтрацией и сохранением.' : 'To-Do list with priority tracking, filters, and persistence.'} />
         {tasks.length > 0 && (
           <button className="win-btn" onClick={clearAll} title={t(language as Lang, 'clearAll')} style={{ padding: '6px' }}>
             <Trash2 size={16} />

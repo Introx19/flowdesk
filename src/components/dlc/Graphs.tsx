@@ -1,3 +1,4 @@
+import InfoButton from '../InfoButton';
 import React, { useState, useEffect, useRef } from 'react';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import { compile } from 'mathjs';
@@ -6,7 +7,6 @@ import { Settings2, Plus, Trash2, Maximize2, Activity } from 'lucide-react';
 import nerdamer from 'nerdamer/all.min';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
-import InfoButton from '../InfoButton';
 
 interface AnalysisResult {
   yInt?: string;
@@ -376,7 +376,8 @@ export default function Graphs() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px 10px' }}>
           <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             {t(language as Lang, 'graphsTitle')}
-            <InfoButton text={t(language as Lang, 'dlc_desmos_desc' as any) || 'Graphing calculator'} />
+            <InfoButton text={language === 'ru' ? 'Построение 2D математических графиков и исследование функций.' : '2D mathematical function plotter and graphing engine.'} />
+            
           </h2>
           <button className="btn" onClick={() => setShowPanel(!showPanel)}>
             {showPanel ? <Maximize2 size={16} /> : <Settings2 size={16} />}

@@ -24,35 +24,149 @@ export default function Onboarding() {
   }, []);
 
   const stepsRu = [
-    { target: null, title: 'Добро пожаловать в TesseraDesk', text: 'Давайте пройдем быстрое обучение по всем функциям! (Hub версия 1.0)' },
-    { target: 'nav-stopwatch', title: 'Управление Временем', text: '✔ Секундомер и Pomodoro-таймер для фокуса.' },
-    { target: 'nav-minitimer', title: 'Мини-таймер', text: '✔ Компактный плавающий таймер для рабочего стола.' },
-    { target: 'nav-reminders', title: 'Напоминания', text: '✔ Оставляйте себе будильники и важные заметки по времени.' },
-    { target: 'nav-calc', title: 'Калькулятор', text: '✔ Быстрый калькулятор всегда под рукой.' },
-    { target: 'nav-tasks', title: 'Управление делами', text: '✔ Встроенный список задач и умные заметки.' },
-    { target: 'nav-notes', title: 'Заметки', text: '✔ Текстовые документы для важной информации.' },
-    { target: 'nav-screenshot', title: 'Скриншоты', text: '✔ Мгновенные снимки экрана.' },
-    { target: 'nav-paint', title: 'Рисование (Paint)', text: '✔ Обрезайте и редактируйте скриншоты в Paint.' },
-    { target: 'nav-dnd', title: 'Режим Не Беспокоить', text: '✔ Отключает все звуковые оповещения.' },
-    { target: 'nav-opacity', title: 'Прозрачность', text: '✔ ЛКМ - Вкл/Выкл прозрачность фона.\n✔ ПКМ - Детальная настройка ползунком.' },
-    { target: 'nav-settings', title: 'Настройки и Доп. контент', text: '✔ Тут настройки!\nВо вкладке "Доп. контент" можно бесплатно включить: Таблицу Менделеева, Графики и Решатель Интегралов!' },
-    { target: null, title: 'Готово!', text: '✔ Любое окно можно вытащить отдельно (зажать СКМ или кнопку булавки).\n✔ Повторное нажатие на горячую клавишу закрывает окно.' }
+    { 
+      target: null, 
+      title: 'Добро пожаловать в TesseraDesk v1.8.4', 
+      text: 'Универсальный модульный хаб для учёбы, работы, науки и автоматизации.\n\nПройдите этот короткий интерактивный гид, чтобы узнать обо всех фишках и возможностях программы!' 
+    },
+    { 
+      target: 'nav-library', 
+      title: 'Библиотека дополнений (DLC)', 
+      text: '✔ Каталог всех расширений: Таблица Менделеева, Графики функций, AI Super Humanizer, Human Typer, Автокликер, Dev Tools и др.\n✔ Перетаскивайте (Drag & Drop) любые иконки на таскбар для настройки панели под себя!\n✔ Кнопка «Сброс» вернёт стандартный вид в один клик.' 
+    },
+    { 
+      target: 'nav-stopwatch', 
+      title: 'Секундомер', 
+      text: '✔ Высокоточный секундомер с фиксацией кругов и сплитов.\n✔ Возможность выгрузки и просмотра истории результатов.\n✔ Открепляется в отдельное компактное плавающее окно для тренировок или тайминга.' 
+    },
+    { 
+      target: 'nav-minitimer', 
+      title: 'Мини-таймер & Pomodoro', 
+      text: '✔ Быстрый таймер обратного отсчёта для любых задач.\n✔ Встроенный режим Pomodoro (25 мин фокуса / 5 мин отдыха) со звуковыми оповещениями.\n✔ Идеален для глубокой концентрации и тайм-менеджмента.' 
+    },
+    { 
+      target: 'nav-reminders', 
+      title: 'Напоминания и Будильники', 
+      text: '✔ Создавайте важные напоминания на точное время или день.\n✔ Всплывающие системные тост-уведомления даже при свернутом приложении.\n✔ Звуковые сигналы гарантируют, что вы не пропустите событие.' 
+    },
+    { 
+      target: 'nav-calc', 
+      title: 'Калькулятор', 
+      text: '✔ Стандартный и продвинутый инженерный режим с тригонометрией (RAD/DEG).\n✔ Сохранение полной истории вычислений.\n✔ Удобное управление с клавиатуры и моментальный расчёт формул.' 
+    },
+    { 
+      target: 'nav-tasks', 
+      title: 'Менеджер задач', 
+      text: '✔ Интерактивный to-do список с приоритетами (высокий, средний, низкий).\n✔ Фильтрация по статусу выполнения.\n✔ Все задачи сохраняются автоматически и всегда под рукой.' 
+    },
+    { 
+      target: 'nav-notes', 
+      title: 'Умный блокнот', 
+      text: '✔ Форматирование текста: жирный, курсив, зачёркнутый, списки, чекбоксы и маркеры цвета.\n✔ Вставка картинок прямо из буфера обмена (Ctrl+V) или перетаскиванием!\n✔ Автосохранение при каждом вводе.' 
+    },
+    { 
+      target: 'nav-screenshot', 
+      title: 'Умные скриншоты', 
+      text: '✔ Мгновенный захват экрана, выделение любой области или всего монитора.\n✔ Режим быстрого снимка прямо в буфер обмена.\n✔ Всплывающее окно предпросмотра с таймером и быстрыми действиями.' 
+    },
+    { 
+      target: 'nav-paint', 
+      title: 'Графический редактор', 
+      text: '✔ Полноценная рисовалка: кисти, маркеры, аэрозоль, геометрические фигуры и текст.\n✔ Послойное редактирование (Layers) и стрелки для разметки скриншотов.\n✔ Быстрое копирование готового арта в буфер или сохранение в PNG.' 
+    },
+    { 
+      target: 'nav-dnd', 
+      title: 'Режим «Не беспокоить»', 
+      text: '✔ Один клик — и все звуковые эффекты таймеров и уведомлений глушатся.\n✔ Полезно на уроках, парах, звонках или во время важных презентаций.' 
+    },
+    { 
+      target: 'nav-opacity', 
+      title: 'Прозрачность интерфейса', 
+      text: '✔ ЛКМ — мгновенно включает режим прозрачности для работы поверх других окон.\n✔ ПКМ — открывает плавный ползунок регулировки прозрачности (20%–100%).' 
+    },
+    { 
+      target: 'nav-settings', 
+      title: 'Настройки и Персонализация', 
+      text: '✔ Выбор тем (Тёмная, Светлая, Мягкая) и кастомного акцентного цвета.\n✔ Настройка глобальных горячих клавиш.\n✔ Управление модулями DLC, проверка обновлений и Зал славы тестировщиков!' 
+    },
+    { 
+      target: null, 
+      title: 'Всё готово к работе!', 
+      text: '✔ Открепление окон: нажмите на булавку или кликните СКМ по кнопке инструмента, чтобы открыть его в отдельном окне!\n✔ Подсказки: в каждом окне есть значок «i» с подробным описанием.\n✔ Мини-режим: сверните приложение в компактный квадратик 54×54 кнопкой вверху таскбара.' 
+    }
   ];
 
   const stepsEn = [
-    { target: null, title: 'Welcome to TesseraDesk', text: 'Let\'s take a quick tour of all features! (Hub Version 1.0)' },
-    { target: 'nav-stopwatch', title: 'Time Management', text: '✔ Stopwatch and Pomodoro timer for deep focus.' },
-    { target: 'nav-minitimer', title: 'Mini Timer', text: '✔ Compact floating timer for your desktop.' },
-    { target: 'nav-reminders', title: 'Reminders', text: '✔ Set alarms and time-based important notes.' },
-    { target: 'nav-calc', title: 'Calculator', text: '✔ Quick calculator always at hand.' },
-    { target: 'nav-tasks', title: 'Task Management', text: '✔ Built-in task list and organization.' },
-    { target: 'nav-notes', title: 'Notes', text: '✔ Text documents for important info.' },
-    { target: 'nav-screenshot', title: 'Screenshots', text: '✔ Instant screen captures.' },
-    { target: 'nav-paint', title: 'Paint', text: '✔ Crop and edit screenshots directly in Paint.' },
-    { target: 'nav-dnd', title: 'Do Not Disturb', text: '✔ Disables all sound notifications.' },
-    { target: 'nav-opacity', title: 'UI Opacity', text: '✔ Left Click - Toggle background transparency.\n✔ Right Click - Fine-tune with a slider.' },
-    { target: 'nav-settings', title: 'Settings & DLC Tools', text: '✔ Here are the settings!\nIn the "DLC Tools" tab you can enable: Periodic Table, Formulas, Graphs and Integrals solver!' },
-    { target: null, title: 'All Set!', text: '✔ Any window can be detached as a floating widget (Middle Click or Pin button).\n✔ Pressing a global shortcut again closes the matching window.' }
+    { 
+      target: null, 
+      title: 'Welcome to TesseraDesk v1.8.4', 
+      text: 'Your modular desktop powerhouse for productivity, scientific research, and AI automation.\n\nTake this quick interactive tour to discover all pro features and hidden gems!' 
+    },
+    { 
+      target: 'nav-library', 
+      title: 'DLC Library & Drag & Drop', 
+      text: '✔ Complete catalog of all tools: Periodic Table, 2D Graphs, AI Super Humanizer, Human Typer, AutoClicker, Dev Tools, and more.\n✔ Drag & drop any icon directly onto the sidebar to organize your custom dock!\n✔ The Reset button restores the default layout in one click.' 
+    },
+    { 
+      target: 'nav-stopwatch', 
+      title: 'Stopwatch', 
+      text: '✔ High-precision stopwatch with lap times and split logging.\n✔ Exportable history and clean lap tracking.\n✔ Detachable into a compact floating timer widget for workouts and time trials.' 
+    },
+    { 
+      target: 'nav-minitimer', 
+      title: 'Mini Timer & Pomodoro', 
+      text: '✔ Quick countdown timer with customizable presets.\n✔ Integrated Pomodoro mode (25m focus / 5m break) with custom audio chimes.\n✔ Perfect for deep focus and structured productivity sessions.' 
+    },
+    { 
+      target: 'nav-reminders', 
+      title: 'Reminders & Alarms', 
+      text: '✔ Schedule important reminders for exact dates and times.\n✔ Custom system toast notifications appear even when the app is minimized.\n✔ Audio alerts ensure you never miss a deadline.' 
+    },
+    { 
+      target: 'nav-calc', 
+      title: 'Calculator', 
+      text: '✔ Standard & Scientific modes with full trigonometry support (RAD/DEG).\n✔ Persistent calculation history with one-click reuse.\n✔ Full keyboard navigation and instant formula evaluation.' 
+    },
+    { 
+      target: 'nav-tasks', 
+      title: 'Task Manager', 
+      text: '✔ Interactive to-do lists with priority tags (High, Medium, Low).\n✔ Filter by completed/active tasks.\n✔ Auto-saved locally so your agenda is always ready.' 
+    },
+    { 
+      target: 'nav-notes', 
+      title: 'Smart Notepad', 
+      text: '✔ Rich text formatting: Bold, Italic, Strikethrough, Lists, Checkboxes & Color Highlighters.\n✔ Paste images directly from clipboard (Ctrl+V) or drag & drop files!\n✔ Real-time auto-saving with instant recovery.' 
+    },
+    { 
+      target: 'nav-screenshot', 
+      title: 'Smart Screenshots', 
+      text: '✔ Instant screen capture with custom area crop or full screen.\n✔ Fast screenshot mode directly to clipboard.\n✔ Interactive preview popup with delay timer and quick save actions.' 
+    },
+    { 
+      target: 'nav-paint', 
+      title: 'Graphic Editor', 
+      text: '✔ Full creative canvas: Brushes, markers, spray, shapes, and text tool.\n✔ Multi-layer support and step annotations for marking up screenshots.\n✔ Instant copy to clipboard or high-res PNG export.' 
+    },
+    { 
+      target: 'nav-dnd', 
+      title: 'Do Not Disturb', 
+      text: '✔ One-click mute for all timer beeps and reminder chimes.\n✔ Essential during lectures, study sessions, calls, or presentations.' 
+    },
+    { 
+      target: 'nav-opacity', 
+      title: 'UI Opacity', 
+      text: '✔ Left Click — instantly toggle see-through background mode.\n✔ Right Click — open smooth opacity slider (20%–100%) to match your desktop.' 
+    },
+    { 
+      target: 'nav-settings', 
+      title: 'Settings & Customization', 
+      text: '✔ Theme presets (Dark, Light, Soft) and custom accent color picker.\n✔ Global system-wide hotkey configuration.\n✔ DLC management, auto-update checker, and Testers Hall of Fame!' 
+    },
+    { 
+      target: null, 
+      title: 'You\'re Ready to Roll!', 
+      text: '✔ Floating Windows: Click the pin icon or middle-click any sidebar button to detach it into an independent window!\n✔ Info Badges: Click the glowing ‘i’ badge inside any tool for quick tips.\n✔ Mini Mode: Collapse into a 54×54 mini-square widget anytime using the top chevron button.' 
+    }
   ];
 
   const steps = language === 'ru' ? stepsRu : stepsEn;
@@ -145,38 +259,55 @@ export default function Onboarding() {
       ) : (
         <div style={{
           position: targetRect ? 'absolute' : 'relative',
-          top: targetRect ? Math.min(targetRect.top - 20, window.innerHeight - 250) : 'auto',
+          top: targetRect ? Math.min(Math.max(20, targetRect.top - 20), window.innerHeight - 340) : 'auto',
           left: targetRect ? targetRect.right + 20 : 'auto',
-          background: 'var(--bg-main)', width: '350px', padding: '20px', borderRadius: '12px',
+          background: 'var(--bg-main)', width: '380px', padding: '22px', borderRadius: '14px',
           border: '1px solid var(--accent)', textAlign: 'left', 
-          boxShadow: '0 10px 40px rgba(0,0,0,0.6), 0 0 0 1px var(--accent-glow)',
+          boxShadow: '0 12px 48px rgba(0,0,0,0.7), 0 0 0 1px var(--accent-glow)',
           transition: 'all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}>
           {targetRect && (
-            <div style={{ position: 'absolute', left: '-25px', top: targetRect.top - Math.min(targetRect.top - 20, window.innerHeight - 250) + 10, color: 'var(--accent)' }}>
+            <div style={{ position: 'absolute', left: '-25px', top: Math.max(15, targetRect.top - Math.min(Math.max(20, targetRect.top - 20), window.innerHeight - 340) + 6), color: 'var(--accent)' }}>
               <ArrowLeft size={30} fill="currentColor" />
             </div>
           )}
+          <h3 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--accent)', fontSize: '1.18em', fontWeight: 600 }}>{currentStepInfo?.title}</h3>
+          <div style={{ 
+            color: 'var(--text-main)', 
+            fontSize: '0.92em', 
+            lineHeight: 1.55, 
+            marginBottom: '22px', 
+            whiteSpace: 'pre-line' 
+          }}>
+            {currentStepInfo?.text}
+          </div>
           
-          <h3 style={{ marginTop: 0, color: 'var(--accent)', fontSize: '1.2em' }}>{currentStepInfo?.title}</h3>
-          <div style={{ color: 'var(--text-main)', fontSize: '0.95em', minHeight: '60px', whiteSpace: 'pre-line' }}>{currentStepInfo?.text}</div>
-          
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginBottom: '15px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', marginBottom: '18px', marginTop: 'auto' }}>
             {steps.map((_, i) => (
-               <div key={i} style={{ width: '8px', height: '8px', borderRadius: '50%', background: i === step ? 'var(--accent)' : 'var(--glass-border)' }}></div>
+               <div 
+                 key={i} 
+                 style={{ 
+                   width: i === step ? '18px' : '6px', 
+                   height: '6px', 
+                   borderRadius: '3px', 
+                   background: i === step ? 'var(--accent)' : 'var(--glass-border)',
+                   boxShadow: i === step ? '0 0 8px var(--accent-glow)' : 'none',
+                   transition: 'all 0.25s ease' 
+                 }}
+               />
             ))}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <button className="action-btn outline" onClick={close} style={{ padding: '4px 12px', fontSize: '0.9em' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button className="action-btn outline" onClick={close} style={{ padding: '6px 14px', fontSize: '0.88em' }}>
               {language === 'ru' ? 'Пропустить' : 'Skip'}
             </button>
             {step < steps.length - 1 ? (
-              <button className="btn btn-primary" onClick={() => setStep(step + 1)}>
+              <button className="btn btn-primary" onClick={() => setStep(step + 1)} style={{ padding: '6px 18px', fontSize: '0.9em' }}>
                 {language === 'ru' ? 'Далее' : 'Next'}
               </button>
             ) : (
-               <button className="btn btn-primary" onClick={close}>
+               <button className="btn btn-primary" onClick={close} style={{ padding: '6px 18px', fontSize: '0.9em' }}>
                 {language === 'ru' ? 'Начать работу!' : 'Get Started!'}
                </button>
             )}

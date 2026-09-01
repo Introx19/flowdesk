@@ -1,9 +1,9 @@
+import InfoButton from '../InfoButton';
 import { useState, useEffect } from 'react';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
 import { Code, Trash2, Check, Copy, RefreshCw, XCircle, Pipette, ChevronDown, ChevronRight, Terminal } from 'lucide-react';
-import InfoButton from '../InfoButton';
 
 export default function DevTools() {
   const { isSm } = useWindowSize();
@@ -253,7 +253,7 @@ export default function DevTools() {
         <h2 style={{ padding: '15px 20px 0', margin: 0, borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px', display: 'flex', alignItems: 'center' }}>
           <Terminal size={14} style={{ marginRight: '6px' }} />
           {t(language as Lang, 'devTools' as any)}
-          <InfoButton text={t(language as Lang, 'devToolsInfo' as any) || 'Developer Tools Info'} />
+          <InfoButton text={language === 'ru' ? 'Набор инструментов разработчика: форматирование JSON/Base64, убийца портов, Regex-тестер, пипетка и сниппеты.' : 'Developer toolkit: JSON/Base64, Port Killer, Regex tester, color picker, and code snippets.'} />
         </h2>
       )}
       

@@ -1,8 +1,8 @@
+import InfoButton from '../InfoButton';
 import { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Coins, Settings2, ChevronDown } from 'lucide-react';
 import { translations } from '../../i18n/texts';
-import InfoButton from '../InfoButton';
 
 type Lang = 'en' | 'ru';
 const t = (lang: Lang, key: keyof typeof translations['en']) => translations[lang][key] || translations['en'][key];
@@ -84,7 +84,8 @@ export default function Numismatics() {
       <div className="tool-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Coins size={20} />
         <span className="tool-title">{t(language as Lang, 'numismatics_title' as any) || 'Numismatics'}</span>
-        <InfoButton text={t(language as Lang, 'dlc_numismatics_desc' as any) || 'Numismatics tool'} />
+        <InfoButton text={language === 'ru' ? 'Калькулятор и конвертер монет для модификации Create Numismatics.' : 'Coin calculator and currency converter for the Create Numismatics mod.'} />
+        
       </div>
       <style>{`
         .numismatics-input::-webkit-outer-spin-button,
