@@ -4,6 +4,7 @@ import { useWindowSize } from '../../hooks/useWindowSize';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
 import { elementNamesRu } from './elementTranslations';
+import InfoButton from '../InfoButton';
 
 const categoryRu: Record<string, string> = {
   'noble gas': 'Благородный газ',
@@ -71,7 +72,12 @@ export default function PeriodicTable() {
 
   return (
     <div className="panel" style={{ height: '100%', padding: '0', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)' }}>
-      {!isSm && <h2 style={{ padding: '15px 20px 0', margin: 0, borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px' }}>{t(language as Lang, 'periodicTableTitle')}</h2>}
+      {!isSm && (
+        <h2 style={{ padding: '15px 20px 0', margin: 0, borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {t(language as Lang, 'periodicTableTitle')}
+          <InfoButton text={t(language as Lang, 'dlc_periodicTable_desc' as any) || 'Periodic Table'} />
+        </h2>
+      )}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 

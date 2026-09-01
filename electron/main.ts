@@ -1,9 +1,13 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, clipboard, Menu, dialog, nativeImage, protocol, Notification, Tray, screen, desktopCapturer } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut, clipboard, Menu, dialog, nativeImage, protocol, Notification, Tray, screen, desktopCapturer, shell } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import updaterPkg from 'electron-updater'
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const robot = require('robotjs');
+const { GoogleGenAI } = require('@google/genai');
 const { autoUpdater } = updaterPkg
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -39,6 +43,9 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(process.env.DIST as string, 'index.html'))
   }
+  
+  mainWindow.on('maximize', () => mainWindow?.webContents.send('window-maximized', true));
+  mainWindow.on('unmaximize', () => mainWindow?.webContents.send('window-maximized', false));
 }
 
 app.on('window-all-closed', () => {
@@ -145,7 +152,38 @@ ipcMain.on('window-minimize', (event) => {
       win.minimize();
     }
   }
-})
+});
+
+ipcMain.on('window-toggle-maximize', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win && !win.isDestroyed()) {
+    if (win.isMaximized()) {
+      win.unmaximize();
+    } else {
+      win.maximize();
+    }
+  }
+});
+
+ipcMain.on('window-maximize', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win && !win.isDestroyed()) {
+    win.maximize();
+  }
+});
+
+ipcMain.on('ensure-minimum-size', (event, width, height) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    const bounds = win.getBounds();
+    const newWidth = Math.max(bounds.width, width);
+    const newHeight = Math.max(bounds.height, height);
+    win.setMinimumSize(width, height);
+    if (newWidth !== bounds.width || newHeight !== bounds.height) {
+      win.setSize(newWidth, newHeight);
+    }
+  }
+});
 
 ipcMain.on('window-hide', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
@@ -187,11 +225,28 @@ ipcMain.on('resize-window', (event, width, height) => {
   }
 })
 
+let pendingEditorImage: string | null = null;
+
 ipcMain.on('open-paint', (event, filePath) => {
-  if (filePath) {
-    exec(`mspaint "${filePath}"`);
+  openToolWin('image-editor');
+});
+
+ipcMain.on('open-paint-with-image', (event, dataUrl) => {
+  pendingEditorImage = dataUrl;
+  const existingWin = toolWindows['image-editor'];
+  if (existingWin && !existingWin.isDestroyed()) {
+    existingWin.show();
+    existingWin.focus();
+    existingWin.webContents.send('load-screenshot-data', dataUrl);
   } else {
-    exec('mspaint');
+    openToolWin('image-editor');
+  }
+});
+
+ipcMain.on('request-screenshot-data', (event) => {
+  if (pendingEditorImage) {
+    event.sender.send('load-screenshot-data', pendingEditorImage);
+    pendingEditorImage = null;
   }
 });
 
@@ -225,6 +280,27 @@ async function takeScreenshot(multiMode: boolean = false) {
     // Find source matching the current display
     const currentSource = sources.find(s => s.display_id === currentDisplay.id.toString()) || sources[0];
     const dataUrl = currentSource.thumbnail.toDataURL();
+    
+    if (currentFastMode) {
+      const image = nativeImage.createFromDataURL(dataUrl);
+      clipboard.writeImage(image);
+      
+      if (currentSaveToDisk) {
+        try {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const fileName = `Screenshot-${timestamp}.png`;
+          const savePath = currentCustomFolder ? path.join(currentCustomFolder, fileName) : path.join(app.getPath('pictures'), fileName);
+          fs.writeFileSync(savePath, image.toPNG());
+        } catch (e) {
+          console.error("Failed to save fast screenshot:", e);
+        }
+      }
+      
+      mainWindow?.webContents.send('fast-screenshot-done', dataUrl);
+      
+      if (isAppCompact && previewWindows.length === 0) mainWindow?.show();
+      return;
+    }
     
     if (!selectWindow || selectWindow.isDestroyed()) {
       selectWindow = new BrowserWindow({
@@ -296,10 +372,7 @@ ipcMain.on('cropped-screenshot', (event, croppedDataUrl, multiMode) => {
     }
     if (isAppCompact && previewWindows.length === 0) mainWindow?.show();
     
-    // Show system notification
-    if (Notification.isSupported()) {
-      new Notification({ title: 'Скриншот', body: 'Область сохранена в буфер обмена' }).show();
-    }
+    showCustomNotification('Скриншот', 'Область сохранена в буфер обмена', croppedDataUrl);
     return;
   }
 
@@ -342,13 +415,23 @@ ipcMain.on('cropped-screenshot', (event, croppedDataUrl, multiMode) => {
   previewWindows.push(newPreviewWindow);
 });
 
-ipcMain.on('take-screenshot', (event, multiMode, fastMode = false) => {
-  // Store the current fast mode in a global variable so the hotkey can use it
-  currentFastMode = fastMode;
-  takeScreenshot(multiMode);
-});
-
+let currentSaveToDisk = true;
+let currentCustomFolder: string | null = null;
 let currentFastMode = false;
+
+ipcMain.on('take-screenshot', (event, multiMode, fastMode = false, delay = 0, saveToDisk = true, customFolder: string | null = null) => {
+  currentFastMode = fastMode;
+  currentSaveToDisk = saveToDisk;
+  currentCustomFolder = customFolder;
+  if (delay > 0) {
+    if (isAppCompact) mainWindow?.hide(); // Hide immediately
+    setTimeout(() => {
+      takeScreenshot(multiMode);
+    }, delay * 1000);
+  } else {
+    takeScreenshot(multiMode);
+  }
+});
 
 ipcMain.on('show-screenshot-menu', (event, dataUrl, strings) => {
   const template = [
@@ -428,7 +511,12 @@ function max(a: number, b: number) { return a > b ? a : b; }
 let toolWindows: Record<string, BrowserWindow | null> = {};
 
 function openToolWin(tool: string) {
-  if (toolWindows[tool]) {
+  if (toolWindows[tool] && !toolWindows[tool]?.isDestroyed()) {
+    if (tool === 'image-editor') {
+      toolWindows[tool]?.show();
+      toolWindows[tool]?.focus();
+      return;
+    }
     toolWindows[tool]?.close();
     return;
   }
@@ -441,6 +529,12 @@ function openToolWin(tool: string) {
   } else if (tool === 'formulas') {
     wWidth = 450;
     wHeight = 600;
+  } else if (tool === 'image-editor') {
+    wWidth = 1200;
+    wHeight = 800;
+  } else if (tool === 'superHumanizer') {
+    wWidth = 1300;
+    wHeight = 850;
   }
 
   const w = new BrowserWindow({
@@ -449,13 +543,17 @@ function openToolWin(tool: string) {
     minWidth: 100,
     minHeight: 100,
     frame: false,
-    transparent: true,
+    transparent: tool !== 'image-editor',
     alwaysOnTop: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
     }
   });
+
+  if (tool === 'image-editor') {
+    w.maximize();
+  }
 
   toolWindows[tool] = w;
 
@@ -518,8 +616,10 @@ ipcMain.handle('select-file', async (event, filters) => {
 });
 
 let currentShortcuts: any = {};
-ipcMain.on('update-shortcuts', (event, shortcuts, multiScreenshot, fastScreenshot) => {
+let currentScreenshotDelay = 0;
+ipcMain.on('update-shortcuts', (event, shortcuts, multiScreenshot, fastScreenshot, screenshotDelay) => {
   try {
+    currentScreenshotDelay = screenshotDelay || 0;
     if (currentShortcuts.toggleApp) globalShortcut.unregister(currentShortcuts.toggleApp);
     if (currentShortcuts.openCalc) globalShortcut.unregister(currentShortcuts.openCalc);
     if (currentShortcuts.openStopwatch) globalShortcut.unregister(currentShortcuts.openStopwatch);
@@ -547,7 +647,14 @@ ipcMain.on('update-shortcuts', (event, shortcuts, multiScreenshot, fastScreensho
     if (shortcuts.openScreenshot) {
       globalShortcut.register(shortcuts.openScreenshot, () => {
         currentFastMode = fastScreenshot || false;
-        takeScreenshot(multiScreenshot || false);
+        if (currentScreenshotDelay > 0) {
+          if (isAppCompact) mainWindow?.hide();
+          setTimeout(() => {
+            takeScreenshot(multiScreenshot || false);
+          }, currentScreenshotDelay * 1000);
+        } else {
+          takeScreenshot(multiScreenshot || false);
+        }
       });
     }
     currentShortcuts = shortcuts;
@@ -557,14 +664,15 @@ ipcMain.on('update-shortcuts', (event, shortcuts, multiScreenshot, fastScreensho
 });
 
 let notificationWins: BrowserWindow[] = [];
+const notifDataMap = new Map<number, { title: string, body: string, image?: string }>();
 
-ipcMain.on('show-notification', (event, title, body) => {
+function showCustomNotification(title: string, body: string, image?: string) {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
   const { x, y } = primaryDisplay.workArea;
 
   const winWidth = 320;
-  const winHeight = 110;
+  const winHeight = image ? 220 : 110;
   
   const padding = 20;
   // Offset vertically for multiple notifications
@@ -588,6 +696,7 @@ ipcMain.on('show-notification', (event, title, body) => {
   });
 
   notificationWins.push(notifWin);
+  notifDataMap.set(notifWin.id, { title, body, image });
 
   const encodedTitle = encodeURIComponent(title);
   const encodedBody = encodeURIComponent(body);
@@ -598,7 +707,14 @@ ipcMain.on('show-notification', (event, title, body) => {
     notifWin.loadFile(path.join(process.env.DIST as string, 'index.html'), { hash: `/notification?title=${encodedTitle}&body=${encodedBody}` });
   }
 
+  notifWin.webContents.on('did-finish-load', () => {
+    if (image) {
+      notifWin.webContents.send('notification-data', { title, body, image });
+    }
+  });
+
   notifWin.on('closed', () => {
+    notifDataMap.delete(notifWin.id);
     notificationWins = notificationWins.filter(w => w !== notifWin);
   });
 
@@ -608,6 +724,20 @@ ipcMain.on('show-notification', (event, title, body) => {
       notifWin.close();
     }
   }, 6000);
+}
+
+ipcMain.on('request-notification-data', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win && notifDataMap.has(win.id)) {
+    const data = notifDataMap.get(win.id);
+    if (data) {
+      event.sender.send('notification-data', data);
+    }
+  }
+});
+
+ipcMain.on('show-notification', (event, title, body, image) => {
+  showCustomNotification(title, body, image);
 });
 
 ipcMain.on('set-startup-mode', (event, runAtStartup) => {
@@ -633,4 +763,399 @@ ipcMain.on('set-mini-mode', (event, isMini) => {
       mainWindow.setAspectRatio(54 / compactHeight);
     }
   }
+});
+
+// ================== HUMAN TYPER ==================
+let typerState = { running: false, paused: false };
+let currentTyperHotkey = '';
+let currentTyperStopHotkey = '';
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const getTypoChar = (ch: string) => {
+    const lower = ch.toLowerCase();
+    const neighbors: Record<string, string> = {
+        "q":"wa",     "w":"qase",   "e":"wsdr",   "r":"edft",   "t":"rfgy",   "y":"tghu",   "u":"yhji",   "i":"ujko",   "o":"iklp",   "p":"ol",
+        "a":"qwsz",   "s":"awedxz", "d":"serfcx", "f":"drtgvc", "g":"ftyhbv", "h":"gyujnb", "j":"huikmn", "k":"jiolm",  "l":"kop",
+        "z":"asx",    "x":"zsdc",   "c":"xdfv",   "v":"cfgb",   "b":"vghn",   "n":"bhjm",   "m":"njk",
+        "й":"цф",     "ц":"уйвы",   "у":"кацв",   "к":"еуап",   "е":"нкпр",   "н":"геро",   "г":"шнл",    "ш":"щгд",    "щ":"зшж",    "з":"хщэ",
+        "ф":"яцв",    "ы":"цвчф",   "в":"уасыч",  "а":"кпмв",   "п":"ериак",  "р":"нтоп",   "о":"гьтр",   "л":"шбдо",   "д":"щюл",    "ж":"зэ",
+        "я":"чф",     "ч":"ясы",    "с":"чмив",   "м":"спак",   "и":"мптр",   "т":"иьро",   "ь":"тбло",   "б":"ьюд",    "ю":"бж"
+    };
+    if (!neighbors[lower]) return 'e';
+    const opts = neighbors[lower];
+    let t = opts.charAt(Math.floor(Math.random() * opts.length));
+    if (ch !== lower) t = t.toUpperCase();
+    return t;
+};
+
+async function runHumanTyper(text: string, config: any) {
+  typerState.running = true;
+  typerState.paused = false;
+  
+  const baseDelay = config.speed || 95;
+  const typoPct = config.errors || 28;
+  const thinkPct = config.thinkPct || 35;
+  const thinkMin = config.thinkMin || 350;
+  const thinkMax = config.thinkMax || 1400;
+
+  await sleep(400);
+
+  let wordTyposRemaining = 0;
+  
+  for (let i = 0; i < text.length; i++) {
+    if (!typerState.running) break;
+    while (typerState.paused) {
+      if (!typerState.running) return;
+      await sleep(100);
+    }
+    
+    const ch = text[i];
+    
+    if (ch === '.' && text.substring(i, i+3) === '...') {
+      try { robot.typeString('...'); } catch (e) {}
+      i += 2;
+      await sleep(baseDelay + 2000);
+      continue;
+    }
+
+    const prev = i > 0 ? text[i-1] : " ";
+    const isWordChar = (c: string) => /[\p{L}\p{N}_]/u.test(c);
+    
+    if (!isWordChar(prev) && isWordChar(ch)) {
+      if (Math.random() * 100 <= typoPct) {
+        wordTyposRemaining = Math.floor(Math.random() * 3) + 1;
+      }
+    }
+
+    let actualDelay = baseDelay;
+    const r = Math.random() * 100;
+    if (r <= 14) actualDelay = Math.max(25, baseDelay - 35) + Math.random() * 10;
+    else if (r <= 38) actualDelay = baseDelay + 25 + Math.random() * 60;
+    else actualDelay = Math.max(20, baseDelay - 10) + Math.random() * 20;
+
+    if (wordTyposRemaining > 0 && isWordChar(ch) && Math.random() * 100 <= 60) {
+      const wrong = getTypoChar(ch);
+      try { robot.typeString(wrong); } catch(e) {}
+      await sleep(actualDelay);
+      
+      await sleep(140 + Math.random() * 280);
+      robot.keyTap('backspace');
+      await sleep(actualDelay);
+      wordTyposRemaining--;
+    }
+    
+    if (ch === '\n') {
+        robot.keyTap('enter');
+    } else {
+        try {
+            robot.typeString(ch);
+        } catch (e) {
+            const oldClip = clipboard.readText();
+            clipboard.writeText(ch);
+            robot.keyTap('v', 'control');
+            clipboard.writeText(oldClip);
+        }
+    }
+    
+    if (ch === ' ') {
+      actualDelay += 15 + Math.random() * 40;
+      if (Math.random() * 100 <= thinkPct) {
+        actualDelay += thinkMin + Math.random() * (thinkMax - thinkMin);
+      }
+    } else if (ch === '\n') {
+      actualDelay += 220 + Math.random() * 300;
+    } else if (ch === ',') {
+      actualDelay += 1000;
+    } else if (ch === '.' || ch === '!' || ch === '?' || ch === '…') {
+      actualDelay += 2000;
+    }
+    
+    await sleep(actualDelay);
+  }
+  typerState.running = false;
+  mainWindow?.webContents.send('human-typer-state', false);
+}
+
+ipcMain.on('set-human-typer-config', (event, startHotkey, stopHotkey, config) => {
+  if (currentTyperHotkey && globalShortcut.isRegistered(currentTyperHotkey)) {
+    globalShortcut.unregister(currentTyperHotkey);
+  }
+  if (currentTyperStopHotkey && globalShortcut.isRegistered(currentTyperStopHotkey)) {
+    globalShortcut.unregister(currentTyperStopHotkey);
+  }
+  
+  currentTyperHotkey = startHotkey;
+  currentTyperStopHotkey = stopHotkey;
+  
+  if (startHotkey) {
+    try {
+      globalShortcut.register(startHotkey, () => {
+        if (!typerState.running) {
+          const text = clipboard.readText();
+          if (text) {
+             runHumanTyper(text, config);
+             mainWindow?.webContents.send('human-typer-state', true);
+          }
+        }
+      });
+    } catch(e) {}
+  }
+  
+  if (stopHotkey) {
+    try {
+      globalShortcut.register(stopHotkey, () => {
+         typerState.running = false;
+         mainWindow?.webContents.send('human-typer-state', false);
+      });
+    } catch(e) {}
+  }
+});
+
+ipcMain.on('start-human-typing', (event, text, config) => {
+    if (!typerState.running && text) {
+        runHumanTyper(text, config);
+        mainWindow?.webContents.send('human-typer-state', true);
+    }
+});
+
+ipcMain.on('stop-human-typing', () => {
+    typerState.running = false;
+    mainWindow?.webContents.send('human-typer-state', false);
+});
+
+// ================== SUPER HUMANIZER (AI) ==================
+let ai: GoogleGenAI | null = null;
+let currentAiKey = '';
+
+ipcMain.on('update-ai-key', (event, key) => {
+    currentAiKey = key;
+    if (key) {
+        try {
+            ai = new GoogleGenAI({ apiKey: key });
+        } catch (e) {
+            console.error('Failed to init AI', e);
+            ai = null;
+        }
+    } else {
+        ai = null;
+    }
+});
+
+async function callModelWithFallback(prompt: string, preferredModel: string, useWebSearch: boolean = false, isHumanizing: boolean = false) {
+  if (!ai) throw new Error('API Key not set');
+
+  const modelsToTry = [
+    preferredModel || 'gemini-3.6-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.7-flash',
+    'gemini-3.1-pro'
+  ];
+  
+  const uniqueModels = [...new Set(modelsToTry)];
+  let lastError = null;
+  const searchModes = useWebSearch ? [true, false] : [false];
+
+  for (const withSearch of searchModes) {
+    for (const model of uniqueModels) {
+      try {
+        const options: any = {
+          model,
+          contents: prompt,
+          config: {
+            temperature: isHumanizing ? 1.05 : 0.4,
+            topP: 0.95,
+          }
+        };
+
+        if (withSearch) {
+          options.config.tools = [{ googleSearch: {} }];
+        }
+
+        const generatePromise = ai.models.generateContent(options);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Model ${model} timed out after 12s`)), 12000)
+        );
+
+        const response: any = await Promise.race([generatePromise, timeoutPromise]);
+        if (response && response.text) {
+          return response.text;
+        }
+      } catch (error: any) {
+        lastError = error;
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    }
+  }
+  throw lastError || new Error('All models failed to respond.');
+}
+
+ipcMain.handle('analyze-text', async (event, { text, context, useWebSearch }) => {
+  if (!ai) return { error: 'API Key not set' };
+  
+  try {
+    const prompt = `You are an expert AI detector, literary editor, and academic writing critic.
+Analyze the following text with extreme depth and accuracy.
+
+CRITICAL REQUIREMENT: Write the entire analysis, headings, and explanations in Russian language!
+
+Text Context / Target Schema (Provided by author):
+${context ? `"${context}"` : 'None specified (General analysis)'}
+
+Analyze and provide:
+1. 📊 **Оценка / AI Score**: Probability of AI generation vs Human authorship, with nuanced breakdown.
+2. ⚠️ **Признаки ИИ / AI Patterns**: Specific clichés, robotic structural artifacts, or natural human quirks.
+3. 📝 **Анализ структуры и фактов / Content & Structure Review**: Check if the text fulfills the author's stated context/schema (e.g. SEE schema, IELTS requirements, logical consistency, fact strength).
+4. 💡 **Практические рекомендации / Actionable Advice**: Exactly what to refine or add to make it sound authentically human and persuasive.
+
+Text to analyze:
+${text}`;
+    
+    const result = await callModelWithFallback(prompt, 'gemini-3.6-flash', useWebSearch, false);
+    return { success: true, result };
+  } catch (error: any) {
+    return { error: error.message || 'Failed to analyze text' };
+  }
+});
+
+function sanitizeHumanizedText(text: string): string {
+  if (!text) return '';
+  let cleaned = text;
+  cleaned = cleaned.replace(/^(Here is|Sure|Here's|Below is)[^\n]*\n+/i, '');
+  cleaned = cleaned.replace(/(^|\n+)(First off,?\s*|To begin with,?\s*|On top of that,?\s*|To wrap it up,?\s*|In conclusion,?\s*|Moreover,?\s*|Furthermore,?\s*|Additionally,?\s*|All in all,?\s*|At the same time,?\s*)/gim, '$1');
+  cleaned = cleaned.replace(/(^|\n+)(Let['’]s be honest:?\s*|Let['’]s face it:?\s*|The best part\??\s*|At its core,?\s*|Here['’]s the thing:?\s*|Here['’]s the kicker:?\s*|It['’]s important to remember that\s*|It is worth noting that\s*|At the end of the day,?\s*)/gim, '$1');
+  cleaned = cleaned.replace(/\s*—\s*/g, ', ');
+  cleaned = cleaned.replace(/\s*–\s*/g, '-');
+  let aBitCount = 0;
+  cleaned = cleaned.replace(/\ba bit\b/gi, (match) => {
+    aBitCount++;
+    return aBitCount <= 2 ? match : 'somewhat';
+  });
+  let usuallyCount = 0;
+  cleaned = cleaned.replace(/\b(usually|tends to|kind of|sort of)\b/gi, (match) => {
+    usuallyCount++;
+    return usuallyCount <= 3 ? match : '';
+  });
+  cleaned = cleaned.replace(/\b(Think about [\w\s]+ for a second[,.]?)/gi, '');
+  cleaned = cleaned.replace(/\b(Then the (?:nineties|eighties|seventies|sixties|forties|thirties|twenty[- ]twenties|early \d{4}s?) hit[,.]?)/gi, 'By the $1,');
+  cleaned = cleaned.replace(/\b([A-Z][\w\s]+ completely changed because of this( too)?[,.]?)/gi, '');
+  cleaned = cleaned.replace(/\b(All that utility comes with [\w\s]+[,.]?)/gi, '');
+  cleaned = cleaned.replace(/\b(What started as [\w\s]+ (roadblock|puzzle|problem) (grew|turned|evolved) into)/gi, 'That');
+  cleaned = cleaned.replace(/  +/g, ' ');
+  cleaned = cleaned.replace(/^\s+/gm, '');
+  return cleaned.trim();
+}
+
+ipcMain.handle('humanize-text', async (event, { text, style, additionalInstructions, context, useWebSearch, strictLength }) => {
+  if (!ai) return { error: 'API Key not set' };
+
+  try {
+    const prompt = `You are a master ghostwriter. Your ONLY job is to rewrite the given text so it passes Sapling, Copyleaks, ZeroGPT, QuillBot, and Scribbr at 0% AI — without sounding like AI trying to fake being human.
+
+TARGET STYLE: ${style}
+AUTHOR CONTEXT: ${context ? `"${context}"` : 'None specified'}
+USER DIRECTIVES: ${additionalInstructions || 'None'}
+SOURCE WORD COUNT: ${text.trim().split(/\s+/).length} words.
+${strictLength 
+  ? "CRITICAL RULE: Your output MUST be EXACTLY the same length or longer. Do NOT summarize or cut details. Expand on ideas slightly if necessary to match the word count exactly." 
+  : `Your output MUST be between ${Math.round(text.trim().split(/\s+/).length * 0.88)} and ${Math.round(text.trim().split(/\s+/).length * 1.15)} words. Count as you write.`
+}
+
+=== THE TWO THINGS DETECTORS ACTUALLY MEASURE ===
+1. PERPLEXITY (word predictability): AI always picks the most statistically "safe" word.
+2. BURSTINESS (sentence length variance): AI produces sentences of nearly identical length.
+
+=== CRITICAL WARNING: "HUMAN-LIKE PADDING" IS ALSO DETECTED ===
+RULE: Use natural hedges SPARINGLY — maximum 2 per entire text, only where they fit organically.
+RULE: Match the register to the style. Academic style = no "I think" or "kinda". Formal essay = no slang.
+
+=== CONVERSATIONAL ENGAGEMENT HOOKS — BANNED IN ALL STYLES ===
+- "Think about [X] for a second" — banned
+- "Then the nineties hit" / "Then the eighties hit" — banned (use a specific year instead)
+
+=== GEN Z THINKING MODE (UNIVERSAL BASELINE) ===
+- Start mid-thought, not at the beginning of the topic. Real people don't open with a thesis.
+- Thoughts connect by feeling/association, not by logical argument chain. One thing reminds you of another.
+- Circle back. Mention something from paragraph 1 again in paragraph 3, slightly differently.
+- Include one moment where the thought seems to correct itself or change direction mid-sentence.
+- The most important point doesn't go first or last — it's buried somewhere in the middle, almost casually.
+
+=== STYLE-SPECIFIC RULES ===
+IF style is CASUAL / CONVERSATIONAL: First person is fine, short fragments allowed.
+IF style is ACADEMIC / FORMAL / SCHOOL ESSAY: NO first-person casual hedges, use academic natural variation, BURSTINESS IS MANDATORY. BANNED BUREAUCRATIC VOCABULARY.
+
+=== UNIVERSAL RULES (ALL STYLES) ===
+1. PERPLEXITY: Choose the unexpected but clear word.
+2. BURSTINESS: Include at least 2 sentences between 2 and 6 words AND at least 1 sentence over 28 words.
+3. NO EM DASHES (—) OR EN DASHES (–).
+4. NO PARALLEL PARAGRAPH OPENERS.
+5. NO SUMMARY ENDINGS.
+6. BREAK THE PREDICTABLE ESSAY ORDER.
+7. IDIOM DENSITY LIMIT: Maximum 2.
+8. NEUTRAL HEDGE LIMIT: Maximum 2-3 total.
+9. PRESERVE 100% OF ORIGINAL CONTENT AND APPROXIMATE LENGTH.
+10. BAN "THESIS → SCIENCE → EXAMPLE" TEMPLATE.
+11. BAN RHYTHMIC RULE-OF-THREE LISTS.
+12. NO CLINICAL VOCABULARY WITHOUT PERSONAL TRANSLATION.
+13. FIRST SENTENCE AND LAST PARAGRAPH ARE THE HIGHEST-RISK ZONES.
+
+Return ONLY the humanized text. No intro, no quotes, no commentary.
+
+Original Text:
+${text}
+`;
+
+    const rawResult = await callModelWithFallback(prompt, 'gemini-3.6-flash', useWebSearch, true);
+    const afterSanitize = sanitizeHumanizedText(rawResult);
+
+    const critiquePrompt = `You are an expert AI text detector and editor. You will review a humanized text for any remaining AI detection signatures, then produce a corrected version.
+
+TEXT TO REVIEW:
+"""
+\${afterSanitize}
+"""
+
+WHAT TO CHECK FOR (be strict):
+1. Em dashes (—) or en dashes (–) anywhere in the text
+2. Any "thesis → science → example" 3-step paragraph pattern
+3. Any "Rule of Three" rhythmic triplet
+4. First sentence starting with a universal claim or "Subject is/are..." construction
+5. Last paragraph ending with a motivational summary or call to action
+6. Clinical vocabulary used without sensory grounding
+7. "A bit", "usually", "tends to", "kind of" appearing more than 3 times total
+8. Consecutive paragraphs starting with the same grammatical pattern
+9. Any sentence from this banned list appearing verbatim: "furthermore", "moreover", "in conclusion", "this demonstrates"
+10. Output that is significantly shorter than the original
+11. SERVICE-BRIDGE TRANSITIONS (listicle glue)
+12. CINEMATIC HYPERBOLE
+
+OUTPUT FORMAT — follow exactly:
+ISSUES: [list each problem you found, one per line, or write "None" if clean]
+REVISED:
+[the complete corrected text — if no issues, copy the original unchanged]`;
+
+    let finalText = afterSanitize;
+    try {
+      const critiqueRaw = await callModelWithFallback(critiquePrompt, 'gemini-3.6-flash', false, false);
+      const revisedMatch = critiqueRaw.match(/REVISED:\s*([\s\S]+)$/i);
+      if (revisedMatch && revisedMatch[1].trim().length > 50) {
+        finalText = revisedMatch[1].trim();
+      }
+    } catch (critiqueError: any) {
+      console.warn('Pass 2 self-critique failed, using Pass 1 result');
+    }
+
+    const result = sanitizeHumanizedText(finalText);
+    return { success: true, result };
+
+  } catch (error: any) {
+    return { error: error.message || 'Failed to humanize text' };
+  }
+});
+
+
+
+ipcMain.on('open-external', (event, url) => {
+  shell.openExternal(url);
 });

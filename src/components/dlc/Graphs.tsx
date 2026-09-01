@@ -6,6 +6,7 @@ import { Settings2, Plus, Trash2, Maximize2, Activity } from 'lucide-react';
 import nerdamer from 'nerdamer/all.min';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
+import InfoButton from '../InfoButton';
 
 interface AnalysisResult {
   yInt?: string;
@@ -141,24 +142,36 @@ export default function Graphs() {
     ctx.fillStyle = '#111'; // var(--bg-card) dark theme approx
     ctx.fillRect(0, 0, w, h);
 
+    // Dynamic grid step calculation
+    const targetPixels = 80;
+    const rawStep = targetPixels / scale;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+    let niceStep;
+    if (normalized < 1.5) niceStep = 1;
+    else if (normalized < 3.5) niceStep = 2;
+    else if (normalized < 7.5) niceStep = 5;
+    else niceStep = 10;
+    const gridStep = niceStep * magnitude;
+
     // Draw Grid
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     
     // Vertical grid lines
-    const startX = -Math.ceil(centerX / scale);
-    const endX = Math.ceil((w - centerX) / scale);
-    for (let i = startX; i <= endX; i++) {
+    const startX = Math.floor(-centerX / (scale * gridStep)) * gridStep;
+    const endX = Math.ceil((w - centerX) / (scale * gridStep)) * gridStep;
+    for (let i = startX; i <= endX + 1e-9; i += gridStep) {
         const x = centerX + i * scale;
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
     }
 
     // Horizontal grid lines
-    const startY = -Math.ceil(centerY / scale);
-    const endY = Math.ceil((h - centerY) / scale);
-    for (let i = startY; i <= endY; i++) {
+    const startY = Math.floor(-centerY / (scale * gridStep)) * gridStep;
+    const endY = Math.ceil((h - centerY) / (scale * gridStep)) * gridStep;
+    for (let i = startY; i <= endY + 1e-9; i += gridStep) {
         const y = centerY + i * scale;
         ctx.moveTo(0, y);
         ctx.lineTo(w, y);
@@ -182,22 +195,28 @@ export default function Graphs() {
     }
     ctx.stroke();
 
+    // Format numbers properly, e.g. 0.1 instead of 0.10000000000000001
+    const formatNumber = (num: number) => {
+       if (Math.abs(num) < 1e-10) return '0';
+       return parseFloat(num.toFixed(10)).toString();
+    };
+
     // Draw labels
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.font = '10px monospace';
     // Draw x numbers
-    for (let i = startX; i <= endX; i++) {
-      if (i === 0) continue;
+    for (let i = startX; i <= endX + 1e-9; i += gridStep) {
+      if (Math.abs(i) < 1e-10) continue;
       const x = centerX + i * scale;
       const drawY = Math.max(15, Math.min(centerY + 15, h - 5));
-      ctx.fillText(i.toString(), x + 3, drawY);
+      ctx.fillText(formatNumber(i), x + 3, drawY);
     }
     // Draw y numbers
-    for (let i = startY; i <= endY; i++) {
-      if (i === 0) continue;
+    for (let i = startY; i <= endY + 1e-9; i += gridStep) {
+      if (Math.abs(i) < 1e-10) continue;
       const y = centerY + i * scale;
       const drawX = Math.max(5, Math.min(centerX + 5, w - 20));
-      ctx.fillText((-i).toString(), drawX, y - 3);
+      ctx.fillText(formatNumber(-i), drawX, y - 3);
     }
 
     // Draw Equations
@@ -355,7 +374,10 @@ export default function Graphs() {
     <div className="panel" style={{ height: '100%', padding: '0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {!isSm && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px 10px' }}>
-          <h2 style={{ margin: 0 }}>{t(language as Lang, 'graphsTitle')}</h2>
+          <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {t(language as Lang, 'graphsTitle')}
+            <InfoButton text={t(language as Lang, 'dlc_desmos_desc' as any) || 'Graphing calculator'} />
+          </h2>
           <button className="btn" onClick={() => setShowPanel(!showPanel)}>
             {showPanel ? <Maximize2 size={16} /> : <Settings2 size={16} />}
           </button>

@@ -5,6 +5,15 @@ import { Settings2, History } from 'lucide-react';
 import { t, type Lang } from '../i18n/texts';
 import { useSettings } from '../contexts/SettingsContext';
 
+const formatExpression = (expr: string) => {
+  const stripped = expr.replace(/,/g, '');
+  return stripped.replace(/\b\d+(\.\d+)?\b/g, (match) => {
+    const parts = match.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  });
+};
+
 export default function Calculator() {
   const { isXs, isSm, width } = useWindowSize();
   const { language } = useSettings();
@@ -52,24 +61,27 @@ export default function Calculator() {
         }
       }
       if (prev === '0' || prev === 'Error') {
+        const newStr = formatExpression(num);
         setTimeout(() => {
-           inputRef.current?.setSelectionRange(num.length, num.length);
+           inputRef.current?.setSelectionRange(newStr.length, newStr.length);
            inputRef.current?.focus();
         }, 0);
-        return num;
+        return newStr;
       }
       const input = inputRef.current;
       if (input && input.selectionStart !== null) {
         const start = input.selectionStart;
         const end = input.selectionEnd || start;
-        const newStr = prev.slice(0, start) + num + prev.slice(end);
+        const rawNewStr = prev.slice(0, start) + num + prev.slice(end);
+        const newStr = formatExpression(rawNewStr);
         setTimeout(() => {
+          // Approximate cursor position, it might jump slightly if commas change
           input.setSelectionRange(start + num.length, start + num.length);
           input.focus();
         }, 0);
         return newStr;
       }
-      return prev + num;
+      return formatExpression(prev + num);
     });
   };
 
@@ -78,6 +90,8 @@ export default function Calculator() {
       if (!display.trim()) return;
       
       let expr = display;
+      // Убираем запятые, добавленные для форматирования
+      expr = expr.replace(/,/g, '');
       expr = expr.replace(/√/g, 'sqrt');
       expr = expr.replace(/π/g, 'pi');
       expr = expr.replace(/h/g, '(6.62607015e-34)');
@@ -95,15 +109,25 @@ export default function Calculator() {
         };
       }
 
-      const result = String(evaluate(expr, scope));
+      const rawResult = String(evaluate(expr, scope));
+      
+      // Форматируем результат с запятыми (напр. 6000000 -> 6,000,000)
+      let formattedResult = rawResult;
+      const numResult = Number(rawResult);
+      if (!isNaN(numResult) && rawResult !== 'Infinity' && rawResult !== '-Infinity') {
+        const parts = rawResult.split('.');
+        parts[0] = Number(parts[0]).toLocaleString('en-US');
+        formattedResult = parts.join('.');
+      }
+
       setHistory(prev => {
-        const newHist = [`${display} = ${result}`, ...prev].slice(0, 10);
+        const newHist = [`${display} = ${formattedResult}`, ...prev].slice(0, 10);
         return newHist;
       });
-      setDisplay(result);
+      setDisplay(formattedResult);
       setJustCalculated(true);
       setTimeout(() => {
-        inputRef.current?.setSelectionRange(result.length, result.length);
+        inputRef.current?.setSelectionRange(formattedResult.length, formattedResult.length);
         inputRef.current?.focus();
       }, 0);
     } catch {
@@ -134,14 +158,14 @@ export default function Calculator() {
             const start = input.selectionStart;
             const end = input.selectionEnd || start;
             if (start === end) {
-              const newStr = prev.slice(0, start - 1) + prev.slice(end);
+              const newStr = formatExpression(prev.slice(0, start - 1) + prev.slice(end));
               setTimeout(() => {
                 input.setSelectionRange(start - 1, start - 1);
                 input.focus();
               }, 0);
               return newStr || '0';
             } else {
-              const newStr = prev.slice(0, start) + prev.slice(end);
+              const newStr = formatExpression(prev.slice(0, start) + prev.slice(end));
               setTimeout(() => {
                 input.setSelectionRange(start, start);
                 input.focus();
@@ -149,7 +173,7 @@ export default function Calculator() {
               return newStr || '0';
             }
           }
-          return prev.length > 1 ? prev.slice(0, -1) : '0';
+          return prev.length > 1 ? formatExpression(prev.slice(0, -1)) : '0';
         });
       }
     };
@@ -217,7 +241,7 @@ export default function Calculator() {
           ref={inputRef}
           type="text"
           value={display}
-          onChange={(e) => setDisplay(e.target.value)}
+          onChange={(e) => setDisplay(formatExpression(e.target.value))}
           onKeyDown={(e) => {
              if (e.key === 'Enter') {
                e.preventDefault();
@@ -256,10 +280,7 @@ export default function Calculator() {
         {isScientific && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isSm ? '4px' : '8px', flex: 1 }}>
             {[
-              { label: '(', val: '(' }, { label: ')', val: ')' },
-              { label: 'x²', val: '^2' }, { label: 'x³', val: '^3' },
-              { label: '√', val: '√(' }, { label: '∛', val: 'cbrt(' },
-              { label: '^', val: '^' }, { label: 'π', val: 'π' },
+              { label: '∛', val: 'cbrt(' }, { label: 'π', val: 'π' },
               { label: 'sin', val: 'sin(' }, { label: 'cos', val: 'cos(' },
               { label: 'tan', val: 'tan(' }, { label: 'e', val: 'e' },
               { label: 'h', val: 'h' }, // Постоянная планка
@@ -279,7 +300,7 @@ export default function Calculator() {
         )}
 
         {/* Numpad */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: isSm ? '4px' : '8px', flex: isScientific ? 2 : 1 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridTemplateRows: 'repeat(6, 1fr)', gap: isSm ? '4px' : '8px', flex: isScientific ? 2 : 1 }}>
           {['C', '(', ')', '←'].map(btn => (
             <button key={btn} className={`btn ${btn === 'C' || btn === '←' ? 'btn-primary' : ''}`} style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => {
               if (btn === 'C') clear();
@@ -306,10 +327,18 @@ export default function Calculator() {
               else appendNum(btn);
             }}>{btn}</button>
           ))}
+          {['√', 'x²', 'x³', '^'].map(btn => (
+            <button key={btn} className="btn" style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => {
+              if (btn === '√') appendNum('√(');
+              else if (btn === 'x²') appendNum('^2');
+              else if (btn === 'x³') appendNum('^3');
+              else appendNum('^');
+            }}>{btn}</button>
+          ))}
           {['7', '8', '9', '/'].map(btn => <button key={btn} className="btn" style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => appendNum(btn)}>{btn}</button>)}
           {['4', '5', '6', '*'].map(btn => <button key={btn} className="btn" style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => appendNum(btn)}>{btn}</button>)}
           {['1', '2', '3', '-'].map(btn => <button key={btn} className="btn" style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => appendNum(btn)}>{btn}</button>)}
-          {['0', '.', '=', '+'].map(btn => (
+          {['0', '.', '+', '='].map(btn => (
             <button key={btn} className={`btn ${btn === '=' ? 'btn-primary' : ''}`} style={{ padding: '0', width: '100%', height: '100%', fontSize: '1.2em' }} onClick={() => {
                if (btn === '=') calculate();
                else appendNum(btn);

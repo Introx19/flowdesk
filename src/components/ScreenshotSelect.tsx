@@ -46,7 +46,7 @@ const ScreenshotSelect: React.FC = () => {
     setCurrentPos({ x: e.clientX, y: e.clientY });
   };
 
-  const captureFullScreen = () => {
+  const captureFullScreen = async () => {
     if (!dataUrl) return;
     const settingsStr = localStorage.getItem('tesseradesk-settings');
     let multiMode = false;
@@ -56,7 +56,26 @@ const ScreenshotSelect: React.FC = () => {
         multiMode = !!settings.multiScreenshot;
       } catch (e) {}
     }
-    window.electronAPI?.sendCroppedScreenshot(dataUrl, multiMode);
+
+    // Always re-draw the raw (possibly DPI-scaled) dataUrl onto a canvas
+    // that exactly matches the CSS viewport size so the editor gets a
+    // 1:1 pixel image with no padding / empty regions.
+    const img = new Image();
+    img.src = dataUrl;
+    await new Promise(resolve => { img.onload = resolve; });
+
+    const targetW = window.innerWidth;
+    const targetH = window.innerHeight;
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+      window.electronAPI?.sendCroppedScreenshot(canvas.toDataURL('image/png'), multiMode);
+    } else {
+      window.electronAPI?.sendCroppedScreenshot(dataUrl, multiMode);
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -79,15 +98,17 @@ const ScreenshotSelect: React.FC = () => {
       return;
     }
 
-    const scale = window.devicePixelRatio || 1;
-    const x = cssX * scale;
-    const y = cssY * scale;
-    const width = cssWidth * scale;
-    const height = cssHeight * scale;
-
     const img = new Image();
     img.src = dataUrl;
     await new Promise(resolve => img.onload = resolve);
+
+    const imageScaleX = img.naturalWidth / window.innerWidth;
+    const imageScaleY = img.naturalHeight / window.innerHeight;
+
+    const x = cssX * imageScaleX;
+    const y = cssY * imageScaleY;
+    const width = cssWidth * imageScaleX;
+    const height = cssHeight * imageScaleY;
 
     const canvas = document.createElement('canvas');
     canvas.width = width;

@@ -4,6 +4,7 @@ import { useWindowSize } from '../../hooks/useWindowSize';
 import formulasData from './formulas.json';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
+import InfoButton from '../InfoButton';
 
 interface FormulaItem {
   name: string;
@@ -52,7 +53,10 @@ export default function Formulas() {
       {/* Header */}
       {!isSm && (
         <div style={{ padding: '15px 15px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <h2 style={{ margin: 0 }}>{t(language as Lang, 'formulas')}</h2>
+          <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {t(language as Lang, 'formulas')}
+            <InfoButton text={t(language as Lang, 'dlc_formulas_desc' as any) || 'Cheat Sheets'} />
+          </h2>
         </div>
       )}
 

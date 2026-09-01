@@ -1,3 +1,6 @@
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
 :root {
   --bg-main: color-mix(in srgb, #0f0f0f calc(var(--bg-opacity, 0.4) * 100%), transparent);
   --bg-card: color-mix(in srgb, #191919 calc(var(--bg-opacity, 0.4) + 0.1 * 100%), transparent);
@@ -208,8 +211,8 @@ body {
 
 
 .nav-item {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -224,6 +227,13 @@ body {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-main);
 }
+
+.nav-item.dragging {
+  opacity: 0.4;
+  transform: scale(0.85);
+  background: rgba(255, 255, 255, 0.05);
+}
+
 
 .nav-item.active {
   background: var(--accent);
@@ -452,6 +462,15 @@ body {
   gap: 10px;
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .shortcut-input {
   flex: 1;
   min-width: 150px;
@@ -651,8 +670,22 @@ select.task-input option {
 :root[data-style="neumorphism"][data-theme="light"] .action-btn,
 :root[data-style="neumorphism"][data-theme="light"] .nav-item,
 :root[data-style="neumorphism"][data-theme="light"] .task-input {
-  box-shadow: 6px 6px 12px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.9);
+  box-shadow: 6px 6px 12px rgba(0,0,0,0.12), -6px -6px 12px rgba(255,255,255,0.3);
 }
+
+:root[data-style="neumorphism"] .btn:hover,
+:root[data-style="neumorphism"] .icon-btn:hover,
+:root[data-style="neumorphism"] .action-btn:hover,
+:root[data-style="neumorphism"] .nav-item:hover {
+  filter: brightness(1.1);
+}
+:root[data-style="neumorphism"][data-theme="dark"] .btn:hover,
+:root[data-style="neumorphism"][data-theme="dark"] .icon-btn:hover,
+:root[data-style="neumorphism"][data-theme="dark"] .action-btn:hover,
+:root[data-style="neumorphism"][data-theme="dark"] .nav-item:hover {
+  filter: brightness(1.2);
+}
+
 :root[data-style="neumorphism"] .btn:active,
 :root[data-style="neumorphism"] .btn.active,
 :root[data-style="neumorphism"] .action-btn:active,
@@ -666,8 +699,52 @@ select.task-input option {
 :root[data-style="neumorphism"][data-theme="light"] .action-btn:active,
 :root[data-style="neumorphism"][data-theme="light"] .action-btn.active,
 :root[data-style="neumorphism"][data-theme="light"] .nav-item.active {
-  box-shadow: inset 4px 4px 8px rgba(0,0,0,0.08), inset -4px -4px 8px rgba(255,255,255,0.9);
+  box-shadow: inset 4px 4px 8px rgba(0,0,0,0.12), inset -4px -4px 8px rgba(255,255,255,0.3);
   color: var(--accent);
+}
+:root[data-style="neumorphism"] .btn.btn-primary,
+:root[data-style="neumorphism"] .icon-btn.btn-primary,
+:root[data-style="neumorphism"] .action-btn.btn-primary {
+  background: var(--accent);
+  color: var(--bg-main);
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.3), -4px -4px 10px rgba(255,255,255,0.05);
+}
+:root[data-style="neumorphism"][data-theme="light"] .btn.btn-primary,
+:root[data-style="neumorphism"][data-theme="light"] .icon-btn.btn-primary,
+:root[data-style="neumorphism"][data-theme="light"] .action-btn.btn-primary {
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.15), -4px -4px 10px rgba(255,255,255,0.3);
+}
+:root[data-style="neumorphism"] .btn.btn-primary:active,
+:root[data-style="neumorphism"] .icon-btn.btn-primary:active,
+:root[data-style="neumorphism"] .action-btn.btn-primary:active,
+:root[data-style="neumorphism"] .btn.btn-primary.active,
+:root[data-style="neumorphism"] .icon-btn.btn-primary.active,
+:root[data-style="neumorphism"] .action-btn.btn-primary.active {
+  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.3), inset -3px -3px 6px rgba(255,255,255,0.1);
+  color: var(--bg-main);
+}
+:root[data-style="neumorphism"][data-theme="light"] .btn.btn-primary:active,
+:root[data-style="neumorphism"][data-theme="light"] .icon-btn.btn-primary:active,
+:root[data-style="neumorphism"][data-theme="light"] .action-btn.btn-primary:active,
+:root[data-style="neumorphism"][data-theme="light"] .btn.btn-primary.active,
+:root[data-style="neumorphism"][data-theme="light"] .icon-btn.btn-primary.active,
+:root[data-style="neumorphism"][data-theme="light"] .action-btn.btn-primary.active {
+  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.15), inset -3px -3px 6px rgba(255,255,255,0.3);
+}
+
+:root[data-style="neumorphism"] .btn.btn-accent {
+  background: var(--accent) !important;
+  color: white !important;
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.3), -4px -4px 10px rgba(255,255,255,0.05);
+}
+:root[data-style="neumorphism"][data-theme="light"] .btn.btn-accent {
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.15), -4px -4px 10px rgba(255,255,255,0.3);
+}
+:root[data-style="neumorphism"] .btn.btn-accent:active {
+  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.3), inset -3px -3px 6px rgba(255,255,255,0.1);
+}
+:root[data-style="neumorphism"][data-theme="light"] .btn.btn-accent:active {
+  box-shadow: inset 3px 3px 6px rgba(0,0,0,0.15), inset -3px -3px 6px rgba(255,255,255,0.3);
 }
 
 /* Flat Design */
@@ -751,4 +828,134 @@ select.task-input option {
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spinner { animation: spin 1s linear infinite; }
+
+/* --- Premium Image Editor --- */
+.screenshot-toolbar {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.screenshot-toolbar:hover {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.toolbar-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background 0.2s;
+}
+
+.toolbar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-btn:hover::after {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.toolbar-btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+.toolbar-btn.primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.toolbar-btn.danger {
+  color: #ff4444;
+}
+.toolbar-btn.danger:hover {
+  background: rgba(255, 68, 68, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.2);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--glass-border);
+  margin: 0 5px;
+  align-self: center;
+}
+
+.color-picker-input {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.color-picker-input:hover {
+  transform: scale(1.1) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+
+@keyframes progress-stripes {
+  from { background-position: 1rem 0; }
+  to { background-position: 0 0; }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--bg-main);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 20px;
+  width: 300px;
+  max-width: 90%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: scaleIn 0.2s ease;
+}
+
+@theme {
+  --color-background: #080d0a;
+  --color-surface: #121c17;
+  --color-primary: #22c55e;
+  --color-accent: #eab308;
+  --color-text: #f0fdf4;
+  --color-text-muted: #94a3b8;
+  --color-textMuted: #94a3b8;
+}
 

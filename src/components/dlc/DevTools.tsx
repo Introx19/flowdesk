@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import { useSettings } from '../../contexts/SettingsContext';
 import { t, type Lang } from '../../i18n/texts';
-import { Code, Trash2, Check, Copy, RefreshCw, XCircle, Pipette, ChevronDown, ChevronRight } from 'lucide-react';
+import { Code, Trash2, Check, Copy, RefreshCw, XCircle, Pipette, ChevronDown, ChevronRight, Terminal } from 'lucide-react';
+import InfoButton from '../InfoButton';
 
 export default function DevTools() {
   const { isSm } = useWindowSize();
   const { language } = useSettings();
-  const [activeTab, setActiveTab] = useState<'text' | 'port' | 'regex' | 'color' | 'snippets'>('text');
+  const [activeTab, setActiveTab] = useState<'text' | 'hash' | 'jwt' | 'port' | 'regex' | 'color' | 'snippets'>('text');
 
   // Text/JSON state
   const [textInput, setTextInput] = useState('');
@@ -17,6 +18,14 @@ export default function DevTools() {
   // Port Killer state
   const [portInput, setPortInput] = useState('');
   const [portStatus, setPortStatus] = useState<{success: boolean, msg: string} | null>(null);
+
+  // Hash/UUID state
+  const [hashInput, setHashInput] = useState('');
+  const [hashOutput, setHashOutput] = useState('');
+
+  // JWT state
+  const [jwtInput, setJwtInput] = useState('');
+  const [jwtOutput, setJwtOutput] = useState('');
 
   // Regex state
   const [regexPattern, setRegexPattern] = useState('');
@@ -97,6 +106,54 @@ export default function DevTools() {
       setTextError('');
     } catch (e: any) {
       setTextError(e.message);
+    }
+  };
+  
+  const urlEncode = () => {
+    setTextOutput(encodeURIComponent(textInput));
+    setTextError('');
+  };
+
+  const urlDecode = () => {
+    try {
+      setTextOutput(decodeURIComponent(textInput));
+      setTextError('');
+    } catch (e: any) {
+      setTextError(e.message);
+    }
+  };
+
+  // Hash & UUID
+  const generateUUID = () => setHashOutput(crypto.randomUUID());
+  const generateHash = async (algo: string) => {
+    try {
+      const msgBuffer = new TextEncoder().encode(hashInput);
+      const hashBuffer = await crypto.subtle.digest(algo, msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      setHashOutput(hashHex);
+    } catch (e: any) {
+      setHashOutput('Error: ' + e.message);
+    }
+  };
+
+  // JWT Decoder
+  const decodeJwt = () => {
+    try {
+      const parts = jwtInput.split('.');
+      if (parts.length !== 3) throw new Error('Invalid JWT format');
+      
+      const decodeBase64Url = (str: string) => {
+        let b64 = str.replace(/-/g, '+').replace(/_/, '/');
+        while (b64.length % 4) b64 += '=';
+        return decodeURIComponent(escape(atob(b64)));
+      };
+
+      const header = JSON.parse(decodeBase64Url(parts[0]));
+      const payload = JSON.parse(decodeBase64Url(parts[1]));
+      setJwtOutput(JSON.stringify({ header, payload }, null, 2));
+    } catch (e: any) {
+      setJwtOutput('Error: ' + e.message);
     }
   };
 
@@ -192,15 +249,23 @@ export default function DevTools() {
 
   return (
     <div className="panel" style={{ height: '100%', padding: '0', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)' }}>
-      {!isSm && <h2 style={{ padding: '15px 20px 0', margin: 0, borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px' }}>{t(language as Lang, 'dlc_devTools_name' as any)}</h2>}
+      {!isSm && (
+        <h2 style={{ padding: '15px 20px 0', margin: 0, borderBottom: '1px solid var(--glass-border)', paddingBottom: '15px', display: 'flex', alignItems: 'center' }}>
+          <Terminal size={14} style={{ marginRight: '6px' }} />
+          {t(language as Lang, 'devTools' as any)}
+          <InfoButton text={t(language as Lang, 'devToolsInfo' as any) || 'Developer Tools Info'} />
+        </h2>
+      )}
       
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', overflowX: 'auto', flexWrap: 'nowrap' }}>
         {[
-          { id: 'text', label: t(language as Lang, 'devTools_jsonTitle' as any) },
-          { id: 'port', label: t(language as Lang, 'devTools_portsTitle' as any) },
-          { id: 'regex', label: t(language as Lang, 'devTools_regexTitle' as any) },
-          { id: 'color', label: t(language as Lang, 'devTools_colorTitle' as any) },
-          { id: 'snippets', label: t(language as Lang, 'devTools_snippetsTitle' as any) }
+          { id: 'text', label: t(language as Lang, 'devTools_jsonTitle' as any) || 'Text/JSON' },
+          { id: 'hash', label: 'Hash / UUID' },
+          { id: 'jwt', label: 'JWT Decoder' },
+          { id: 'port', label: t(language as Lang, 'devTools_portsTitle' as any) || 'Ports' },
+          { id: 'regex', label: t(language as Lang, 'devTools_regexTitle' as any) || 'Regex' },
+          { id: 'color', label: t(language as Lang, 'devTools_colorTitle' as any) || 'Colors' },
+          { id: 'snippets', label: t(language as Lang, 'devTools_snippetsTitle' as any) || 'Snippets' }
         ].map(tab => (
           <div 
             key={tab.id}
@@ -209,6 +274,7 @@ export default function DevTools() {
               padding: '12px 15px',
               cursor: 'pointer',
               fontSize: '0.9em',
+              whiteSpace: 'nowrap',
               fontWeight: activeTab === tab.id ? 'bold' : 'normal',
               color: activeTab === tab.id ? 'var(--accent)' : 'var(--text-main)',
               borderBottom: activeTab === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
@@ -226,10 +292,12 @@ export default function DevTools() {
         {activeTab === 'text' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '100%' }}>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button className="btn" onClick={formatJson}>{t(language as Lang, 'devTools_formatJson' as any)}</button>
-              <button className="btn" onClick={minifyJson}>{t(language as Lang, 'devTools_minifyJson' as any)}</button>
-              <button className="btn" onClick={encodeB64}>{t(language as Lang, 'devTools_encodeB64' as any)}</button>
-              <button className="btn" onClick={decodeB64}>{t(language as Lang, 'devTools_decodeB64' as any)}</button>
+              <button className="btn" onClick={formatJson}>{t(language as Lang, 'devTools_formatJson' as any) || 'Format JSON'}</button>
+              <button className="btn" onClick={minifyJson}>{t(language as Lang, 'devTools_minifyJson' as any) || 'Minify JSON'}</button>
+              <button className="btn" onClick={encodeB64}>{t(language as Lang, 'devTools_encodeB64' as any) || 'Encode B64'}</button>
+              <button className="btn" onClick={decodeB64}>{t(language as Lang, 'devTools_decodeB64' as any) || 'Decode B64'}</button>
+              <button className="btn" onClick={urlEncode}>URL Encode</button>
+              <button className="btn" onClick={urlDecode}>URL Decode</button>
             </div>
             {textError && <div style={{ color: '#ff5252', fontSize: '0.9em', padding: '10px', background: 'rgba(255,82,82,0.1)', borderRadius: '6px' }}>{textError}</div>}
             
@@ -258,6 +326,85 @@ export default function DevTools() {
                   title="Copy"
                 >
                   {copiedColor === 'output' ? <Check size={16} color="var(--accent)"/> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* HASH / UUID TAB */}
+        {activeTab === 'hash' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '100%' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button className="btn" onClick={generateUUID}>Generate UUID v4</button>
+              <button className="btn" onClick={() => generateHash('SHA-1')}>SHA-1</button>
+              <button className="btn" onClick={() => generateHash('SHA-256')}>SHA-256</button>
+              <button className="btn" onClick={() => generateHash('SHA-512')}>SHA-512</button>
+            </div>
+            
+            <div style={{ display: 'flex', flex: 1, gap: '15px', minHeight: '300px', flexDirection: isSm ? 'column' : 'row' }}>
+              <textarea 
+                className="task-input" 
+                placeholder="Input text to hash..." 
+                value={hashInput} 
+                onChange={e => setHashInput(e.target.value)}
+                style={{ flex: 1, resize: 'none', fontFamily: 'monospace', minHeight: '150px' }}
+                spellCheck={false}
+              />
+              <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <textarea 
+                  className="task-input" 
+                  placeholder="Output..." 
+                  value={hashOutput} 
+                  readOnly
+                  style={{ flex: 1, resize: 'none', fontFamily: 'monospace', background: 'var(--bg-card)', opacity: 0.8, minHeight: '150px' }}
+                  spellCheck={false}
+                />
+                <button 
+                  className="icon-btn" 
+                  style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--bg-card)', padding: '5px' }}
+                  onClick={() => handleCopy(hashOutput, 'hash')}
+                  title="Copy"
+                >
+                  {copiedColor === 'hash' ? <Check size={16} color="var(--accent)"/> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* JWT TAB */}
+        {activeTab === 'jwt' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '100%' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button className="btn" onClick={decodeJwt}>Decode JWT</button>
+            </div>
+            
+            <div style={{ display: 'flex', flex: 1, gap: '15px', minHeight: '300px', flexDirection: isSm ? 'column' : 'row' }}>
+              <textarea 
+                className="task-input" 
+                placeholder="Paste JWT (e.g. eyJhbGciOi...)" 
+                value={jwtInput} 
+                onChange={e => setJwtInput(e.target.value)}
+                style={{ flex: 1, resize: 'none', fontFamily: 'monospace', minHeight: '150px' }}
+                spellCheck={false}
+              />
+              <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <textarea 
+                  className="task-input" 
+                  placeholder="Decoded Output..." 
+                  value={jwtOutput} 
+                  readOnly
+                  style={{ flex: 1, resize: 'none', fontFamily: 'monospace', background: 'var(--bg-card)', opacity: 0.8, minHeight: '150px' }}
+                  spellCheck={false}
+                />
+                <button 
+                  className="icon-btn" 
+                  style={{ position: 'absolute', top: '10px', right: '10px', background: 'var(--bg-card)', padding: '5px' }}
+                  onClick={() => handleCopy(jwtOutput, 'jwt')}
+                  title="Copy"
+                >
+                  {copiedColor === 'jwt' ? <Check size={16} color="var(--accent)"/> : <Copy size={16} />}
                 </button>
               </div>
             </div>

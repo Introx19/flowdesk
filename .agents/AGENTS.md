@@ -25,10 +25,10 @@ This file contains the core architecture rules, known bugs, and constraints for 
 - **Workaround**: Instead, set `document.body.style.opacity = '0'` and `document.body.style.pointerEvents = 'none'` in React.
 - **Resizing**: Before opening the EyeDropper, the window must be expanded to full screen so the picker can select anywhere on the screen. Use synchronous IPC: `window.electronAPI.expandForPicker()` (using `ipcRenderer.sendSync`) so the JavaScript execution thread blocks and preserves the user gesture context.
 
-### B. Auto-Updater & GitHub Releases (СТРОГОЕ ПРАВИЛО)
+### B. Auto-Updater & GitHub Releases (СТРОГОЕ ПРАВИЛО - НИКАКИХ ПРОБЕЛОВ И ТОЧЕК)
 - **Constraint**: Для `electron-updater` **категорически нельзя** использовать файлы с пробелами в названии при загрузке релизов на GitHub.
-- **Rule**: GitHub заменяет пробелы на точки, а `electron-builder` в файле `latest.yml` прописывает дефисы. Из-за этого несовпадения ломается система автообновления (404 ошибка).
-- **Workaround**: ВСЕГДА используй названия с дефисами (например, `TesseraDesk-Setup-1.7.2.exe`) во время загрузки (параметр `?name=...` в API).
+- **Rule**: GitHub заменяет пробелы на точки (`TesseraDesk.Setup.1.8.0.exe`), а `electron-builder` в файле `latest.yml` прописывает дефисы (`TesseraDesk-Setup-1.8.0.exe`). Из-за этого несовпадения ломается система автообновления (404 ошибка).
+- **Workaround**: ВСЕГДА проверяй, что загружаемый `.exe` файл и его `.blockmap` имеют название с дефисами (например, `TesseraDesk-Setup-1.8.0.exe`, `TesseraDesk-Setup-1.8.0.exe.blockmap`) во время загрузки на GitHub (параметр `?name=...` в API). Имя файла должно ТОЧНО соответствовать полю `path`/`url` в манифесте `latest.yml`.
 
 ### C. Windows Taskbar Icon & electron-builder
 - **Constraint**: Если мы меняем иконку приложения (`icon.png`), нужно убедиться, что `electron-builder` перегенерировал `.ico` файл.
@@ -48,3 +48,5 @@ This file contains the core architecture rules, known bugs, and constraints for 
 2. Add the toggle state to `SettingsState` in `SettingsContext.tsx`.
 3. Add translations in `src/i18n/texts.ts`.
 4. Register the UI in `App.tsx` conditionally rendering based on `settings[featureName]`.
+
+- Обязательно для каждой новой функции надо сразу делать английскую локализацию и совместимость со всеми темами.

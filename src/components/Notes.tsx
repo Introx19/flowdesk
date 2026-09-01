@@ -4,6 +4,7 @@ import { useWindowSize } from '../hooks/useWindowSize';
 import { useSettings } from '../contexts/SettingsContext';
 import { t, type Lang } from '../i18n/texts';
 import { useModal } from '../contexts/ModalContext';
+import InfoButton from './InfoButton';
 
 export default function Notes() {
   const { isXs, isSm } = useWindowSize();
@@ -243,7 +244,7 @@ export default function Notes() {
     <div className="panel" style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: isXs || isSm ? '4px' : undefined }}>
       {!isXs && !isSm && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h2 style={{ margin: 0 }}>{t(language as Lang, 'notes')}</h2>
+          <h2 style={{ margin: 0 }}>{t(language as Lang, 'notes')} <InfoButton text={t(language as Lang, 'notesInfo' as any)} /></h2>
            <div style={{ display: 'flex', gap: '8px' }}>
              <div style={{ fontSize: '0.8em', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '5px' }}>
                  <ImageIcon size={14} /> {t(language as Lang, 'supportsImages')}
@@ -326,8 +327,8 @@ export default function Notes() {
           </div>
           
           <div style={{ width: '1px', background: 'var(--glass-border)', margin: '0 5px' }}></div>
-          <button className="action-btn" style={{ padding: '4px 8px', border: '1px solid var(--glass-border)', background: 'transparent' }} onClick={importNotes} title={t(language as Lang, 'import' as any) || 'Import'}><Upload size={16} /></button>
-          <button className="action-btn" style={{ padding: '4px 8px', border: '1px solid var(--glass-border)', background: 'transparent' }} onClick={exportNotes} title={t(language as Lang, 'export' as any) || 'Export'}><Download size={16} /></button>
+          <button className="action-btn" style={{ padding: '4px 8px', border: '1px solid var(--glass-border)', background: 'transparent' }} onClick={importNotes} title={t(language as Lang, 'import' as any) || 'Import'}><Download size={16} /></button>
+          <button className="action-btn" style={{ padding: '4px 8px', border: '1px solid var(--glass-border)', background: 'transparent' }} onClick={exportNotes} title={t(language as Lang, 'export' as any) || 'Export'}><Upload size={16} /></button>
         </div>
       )}
 

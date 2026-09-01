@@ -17,8 +17,18 @@ export interface SettingsState {
   pomodoroBreak: number;
   dndMode: boolean;
   autoUpdate: boolean;
+  oledProtection: boolean;
   multiScreenshot: boolean;
   fastScreenshot: boolean;
+  screenshotDelay: number;
+  saveFastScreenshotDisk: boolean;
+  customScreenshotFolder: string | null;
+  extendedMode: boolean;
+  autoclickerHotkey: string;
+  autoclickerInterval: number;
+  autoclickerIntervalUnit: 'ms' | 's' | 'm';
+  autoclickerButton: 'left' | 'right' | 'middle';
+  autoclickerRandomize: number;
   globalShortcutsEnabled: boolean;
   shortcuts: {
     toggleApp: string;
@@ -46,7 +56,26 @@ export interface SettingsState {
     converter: boolean;
     worldClock: boolean;
     devTools: boolean;
+    autoclicker: boolean;
+    numismatics: boolean;
+    humanTyper: boolean;
+    superHumanizer: boolean;
   };
+  pinnedTools: Record<string, boolean>;
+  pinnedOrder: string[];
+  humanTyperSpeed: number;
+  humanTyperErrors: number;
+  humanTyperThinkPct: number;
+  humanTyperThinkMin: number;
+  humanTyperThinkMax: number;
+  humanTyperStartHotkey: string;
+  humanTyperStopHotkey: string;
+  geminiApiKey: string;
+  geminiModel: string;
+  superHumanizerLanguage: 'ru' | 'en';
+  panicHotkey: string;
+  discordWebhookUrl: string;
+  humanTyperEnterMode: 'enter' | 'shift+enter';
 }
 
 const defaultSettings: SettingsState = {
@@ -63,8 +92,18 @@ const defaultSettings: SettingsState = {
   pomodoroBreak: 5,
   dndMode: false,
   autoUpdate: true,
+  oledProtection: false,
   multiScreenshot: false,
   fastScreenshot: false,
+  screenshotDelay: 0,
+  saveFastScreenshotDisk: true,
+  customScreenshotFolder: null,
+  extendedMode: false,
+  autoclickerHotkey: 'F6',
+  autoclickerInterval: 100,
+  autoclickerIntervalUnit: 'ms',
+  autoclickerButton: 'left',
+  autoclickerRandomize: 0,
   globalShortcutsEnabled: true,
   shortcuts: {
     toggleApp: '',
@@ -92,7 +131,35 @@ const defaultSettings: SettingsState = {
     converter: false,
     worldClock: false,
     devTools: false,
-  }
+    autoclicker: false,
+    numismatics: false,
+    humanTyper: false,
+    superHumanizer: false,
+  },
+  pinnedTools: {
+    stopwatch: true,
+    minitimer: true,
+    reminders: true,
+    calc: true,
+    tasks: true,
+    notes: true,
+    screenshot: true,
+    paint: true
+  },
+  pinnedOrder: ['stopwatch', 'minitimer', 'reminders', 'calc', 'tasks', 'notes', 'screenshot', 'paint'],
+  humanTyperSpeed: 95,
+  humanTyperErrors: 28,
+  humanTyperThinkPct: 35,
+  humanTyperThinkMin: 350,
+  humanTyperThinkMax: 1400,
+  humanTyperStartHotkey: 'F10',
+  humanTyperStopHotkey: 'F8',
+  geminiApiKey: '',
+  geminiModel: 'gemini-3.6-flash',
+  superHumanizerLanguage: 'ru',
+  panicHotkey: 'F9',
+  discordWebhookUrl: '',
+  humanTyperEnterMode: 'enter'
 };
 
 interface SettingsContextType extends SettingsState {
@@ -111,7 +178,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...defaultSettings,
           ...parsed,
           shortcuts: { ...defaultSettings.shortcuts, ...(parsed.shortcuts || {}) },
-          activeTools: { ...defaultSettings.activeTools, ...(parsed.activeTools || {}) }
+          activeTools: { ...defaultSettings.activeTools, ...(parsed.activeTools || {}) },
+          pinnedTools: { ...defaultSettings.pinnedTools, ...(parsed.pinnedTools || {}) },
+          pinnedOrder: parsed.pinnedOrder || defaultSettings.pinnedOrder
         };
       } catch (e) {
         return defaultSettings;
@@ -122,10 +191,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     localStorage.setItem('tesseradesk-settings', JSON.stringify(settings));
-    
+
     if (window.electronAPI) {
       if (settings.globalShortcutsEnabled) {
-        window.electronAPI.updateShortcuts(settings.shortcuts, settings.multiScreenshot, settings.fastScreenshot);
+        window.electronAPI.updateShortcuts(settings.shortcuts, settings.multiScreenshot, settings.fastScreenshot, settings.screenshotDelay);
       } else {
         // Unregister all tool shortcuts, except the master toggles
         window.electronAPI.updateShortcuts({
@@ -136,16 +205,32 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           openMinitimer: '',
           openReminders: '',
           openScreenshot: ''
-        }, settings.multiScreenshot, settings.fastScreenshot);
+        }, settings.multiScreenshot, settings.fastScreenshot, settings.screenshotDelay);
       }
       window.electronAPI.setStartupMode(settings.runAtStartup);
+      
+      window.electronAPI.setHumanTyperConfig(
+        settings.globalShortcutsEnabled ? settings.humanTyperStartHotkey : '',
+        settings.globalShortcutsEnabled ? settings.humanTyperStopHotkey : '',
+        {
+          speed: settings.humanTyperSpeed,
+          errors: settings.humanTyperErrors,
+          thinkPct: settings.humanTyperThinkPct,
+          thinkMin: settings.humanTyperThinkMin,
+          thinkMax: settings.humanTyperThinkMax
+        }
+      );
+      
+      if (settings.geminiApiKey) {
+        window.electronAPI.updateAiKey(settings.geminiApiKey);
+      }
     }
-    
+
     // Apply theme and style
     const root = document.documentElement;
     root.setAttribute('data-theme', settings.theme);
     root.setAttribute('data-style', settings.appStyle);
-    
+
     if (settings.customAccent) {
       root.style.setProperty('--accent', settings.customAccent);
       // Generate a slightly transparent version for glow
