@@ -105,7 +105,8 @@ if (!gotTheLock) {
 
     // Auto-update: only check when packaged (not in dev)
     if (app.isPackaged) {
-      autoUpdater.autoDownload = false;
+      autoUpdater.autoDownload = true;
+      autoUpdater.autoInstallOnAppQuit = true;
       autoUpdater.on('update-available', (info) => {
         mainWindow?.webContents.send('update-available', info);
       });

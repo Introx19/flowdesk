@@ -58,18 +58,21 @@ const Settings: React.FC = () => {
 
   const handleCheckUpdates = async () => {
     if (window.electronAPI) {
+      setUpdateError('');
+      setUpdateMsg(language === 'ru' ? 'Проверка обновлений...' : 'Checking for updates...');
       const res = await window.electronAPI.checkUpdates();
       if (res.status === 'dev') {
-        modal.confirm({ message: t(language as Lang, 'upToDateApp'), hideCancel: true });
+        setUpdateMsg(t(language as Lang, 'upToDateApp'));
       } else if (res.status === 'available') {
-        modal.confirm({ message: `Update available: ${res.version}. Downloading in background...`, hideCancel: true });
+        setUpdateMsg(language === 'ru' ? `Найдена версия ${res.version}. Загрузка в фоне...` : `Version ${res.version} available. Downloading...`);
       } else if (res.status === 'latest') {
-        modal.confirm({ message: t(language as Lang, 'upToDateApp'), hideCancel: true });
+        setUpdateMsg(t(language as Lang, 'upToDateApp'));
       } else {
-        modal.confirm({ message: 'Error checking for updates.', hideCancel: true });
+        setUpdateError(language === 'ru' ? 'Ошибка проверки обновлений.' : 'Error checking for updates.');
+        setUpdateMsg('');
       }
     } else {
-       modal.confirm({ message: t(language as Lang, 'upToDateApp'), hideCancel: true });
+       setUpdateMsg(t(language as Lang, 'upToDateApp'));
     }
   };
 
@@ -770,7 +773,7 @@ const Settings: React.FC = () => {
               >
                 TesseraDesk
               </h2>
-              <div style={{ color: 'var(--text-muted)' }}>{t(language as Lang, 'currentVersion')} 1.8.3</div>
+              <div style={{ color: 'var(--text-muted)' }}>{t(language as Lang, 'currentVersion')} 1.8.4</div>
             </div>
             
             <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>

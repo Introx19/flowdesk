@@ -58,6 +58,7 @@ function App() {
   const [isMaximized, setIsMaximized] = useState(false);
   const [miniAnimating, setMiniAnimating] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [updateReadyInfo, setUpdateReadyInfo] = useState<{ version: string } | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragStarted = useRef<boolean>(false);
@@ -135,6 +136,17 @@ function App() {
       window.electronAPI.onWindowMaximized((maximized) => {
         setIsMaximized(maximized);
       });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (window.electronAPI?.onUpdateDownloaded) {
+      const unsub = window.electronAPI.onUpdateDownloaded((info: any) => {
+        setUpdateReadyInfo(info);
+      });
+      return () => {
+        if (unsub) unsub();
+      };
     }
   }, []);
 
@@ -371,6 +383,43 @@ function App() {
     )}
     <Onboarding />
     {showWhatsNew && !showSplash && <WhatsNewModal onClose={() => setShowWhatsNew(false)} />}
+    {updateReadyInfo && (
+      <div style={{
+        position: 'fixed',
+        top: '12px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 99999,
+        background: 'var(--bg-card)',
+        border: '1px solid var(--accent)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 12px var(--accent-glow)',
+        borderRadius: '10px',
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        backdropFilter: 'blur(16px)',
+        animation: 'fadeIn 0.3s ease'
+      }}>
+        <span style={{ fontSize: '0.9em', fontWeight: 'bold', color: 'var(--text-main)' }}>
+          🚀 {language === 'ru' ? `Доступно обновление v${updateReadyInfo.version}!` : `TesseraDesk v${updateReadyInfo.version} is ready!`}
+        </span>
+        <button 
+          className="btn btn-primary" 
+          style={{ padding: '4px 12px', fontSize: '0.85em' }}
+          onClick={() => window.electronAPI?.installUpdate()}
+        >
+          {language === 'ru' ? 'Перезапустить' : 'Restart now'}
+        </button>
+        <button 
+          className="win-btn close" 
+          style={{ padding: '2px', cursor: 'pointer' }}
+          onClick={() => setUpdateReadyInfo(null)}
+        >
+          <X size={14} />
+        </button>
+      </div>
+    )}
     <div className="app-container" style={{ 
       flexDirection: isCompact ? 'column' : 'row', 
       height: (isCompact && !isMini) ? 'auto' : '100vh',
