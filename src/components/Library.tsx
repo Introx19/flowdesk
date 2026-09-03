@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { t, type Lang } from '../i18n/texts';
-import { 
+import { Code, 
   Timer as TimerIcon, Hourglass, Pin, Calculator as CalculatorIcon, List, 
   StickyNote, FlaskConical, LineChart, BookOpen, FunctionSquare, Scale, 
   Globe, Terminal, MousePointerClick, Coins, LayoutGrid, Palette, Scissors, Keyboard, Sparkles, RefreshCcw
@@ -12,9 +12,10 @@ interface LibraryProps {
   onOpenTool: (toolId: string) => void;
   openPaint: () => void;
   takeScreenshot: () => void;
+  plugins?: any[];
 }
 
-export default function Library({ onOpenTool, openPaint, takeScreenshot }: LibraryProps) {
+export default function Library({ onOpenTool, openPaint, takeScreenshot, plugins = [] }: LibraryProps) {
   const { language, activeTools, pinnedTools, pinnedOrder, updateSettings } = useSettings();
   const { isSm } = useWindowSize();
 
@@ -36,12 +37,28 @@ export default function Library({ onOpenTool, openPaint, takeScreenshot }: Libra
     { id: 'numismatics', icon: Coins, name: t(language as Lang, 'numismatics_title' as any) || 'Numismatics' },
     { id: 'humanTyper', icon: Keyboard, name: 'Human Typer' },
     { id: 'superHumanizer', icon: Sparkles, name: 'Super Humanizer' },
+    { id: 'creatorStudio', icon: Code, name: 'Creator Studio' },
     { id: 'paint', icon: Palette, name: t(language as Lang, 'paint'), customAction: openPaint },
     { id: 'screenshot', icon: Scissors, name: t(language as Lang, 'screenshot'), customAction: takeScreenshot },
   ];
 
   // Only show tools that are active/installed
-  const availableTools = allTools.filter(t => (activeTools as any)[t.id]);
+  const coreTools = allTools.filter(t => (activeTools as any)[t.id]);
+  
+  const pluginTools = plugins.map(p => {
+    // Map string icon from manifest to actual Lucide component if imported, otherwise LayoutGrid
+    let IconComp = LayoutGrid;
+    if (p.icon === 'Box') IconComp = LayoutGrid;
+    
+    return {
+      id: `plugin-${p.id}`,
+      icon: IconComp,
+      name: p.name || 'Unknown Plugin',
+      isPlugin: true
+    };
+  });
+
+  const availableTools = [...coreTools, ...pluginTools];
 
   const togglePin = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -138,7 +155,7 @@ export default function Library({ onOpenTool, openPaint, takeScreenshot }: Libra
           return (
             <div 
               key={tool.id}
-              onClick={() => tool.customAction ? tool.customAction() : onOpenTool(tool.id)}
+              onClick={() => (tool as any).customAction ? (tool as any).customAction() : onOpenTool(tool.id)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -195,9 +212,25 @@ export default function Library({ onOpenTool, openPaint, takeScreenshot }: Libra
                 width: '100%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                position: 'relative'
               }}>
                 {tool.name}
+                {(tool as any).isPlugin && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-25px',
+                    right: '-5px',
+                    fontSize: '0.65em',
+                    background: 'var(--accent)',
+                    color: '#fff',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold'
+                  }}>
+                    DLC
+                  </div>
+                )}
               </div>
               
               <button

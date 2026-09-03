@@ -27,12 +27,14 @@ const Settings: React.FC = () => {
   const [updateError, setUpdateError] = useState('');
   const [downloadProgress, setDownloadProgress] = useState<{percent: number, bytesPerSecond: number} | null>(null);
   const [updateReady, setUpdateReady] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
   
   useEffect(() => {
     if (window.electronAPI) {
       const unsub1 = window.electronAPI.onUpdateAvailable(() => {
-        setUpdateMsg('Найдена новая версия. Загрузка началась...');
+        setUpdateMsg(language === 'ru' ? 'Найдена новая версия. Нажмите кнопку для загрузки.' : 'New version found. Click to download.');
         setUpdateError('');
+        setUpdateAvailable(true);
       });
       const unsub2 = window.electronAPI.onDownloadProgress((progress) => {
         setDownloadProgress(progress);
@@ -64,11 +66,12 @@ const Settings: React.FC = () => {
       if (res.status === 'dev') {
         setUpdateMsg(t(language as Lang, 'upToDateApp'));
       } else if (res.status === 'available') {
-        setUpdateMsg(language === 'ru' ? `Найдена версия ${res.version}. Загрузка в фоне...` : `Version ${res.version} available. Downloading...`);
+        setUpdateMsg(language === 'ru' ? `Найдена версия ${res.version}. Нажмите кнопку для загрузки.` : `Version ${res.version} available. Click to download.`);
+        setUpdateAvailable(true);
       } else if (res.status === 'latest') {
         setUpdateMsg(t(language as Lang, 'upToDateApp'));
       } else {
-        setUpdateError(language === 'ru' ? 'Ошибка проверки обновлений.' : 'Error checking for updates.');
+        setUpdateError(language === 'ru' ? 'Не удалось проверить обновления. Сервер недоступен или нет сети.' : 'Failed to check for updates. Server unreachable or no network.');
         setUpdateMsg('');
       }
     } else {
@@ -620,6 +623,12 @@ const Settings: React.FC = () => {
       name: 'Super Humanizer',
       desc: 'Мощный ИИ-переводчик машинного текста в "человеческий". Делает текст невидимым для AI-детекторов.',
       isInstalled: activeTools.superHumanizer
+    },
+    {
+      id: 'creatorStudio',
+      name: 'TesseraDesk Creator Studio',
+      desc: 'Менеджер DLC и режим разработчика. Позволяет загружать сторонние архивы плагинов (.zip) и управлять ими.',
+      isInstalled: activeTools.creatorStudio
     }
   ];
 
@@ -773,7 +782,7 @@ const Settings: React.FC = () => {
               >
                 TesseraDesk
               </h2>
-              <div style={{ color: 'var(--text-muted)' }}>{t(language as Lang, 'currentVersion')} 1.8.4</div>
+              <div style={{ color: 'var(--text-muted)' }}>{t(language as Lang, 'currentVersion')} 1.8.5</div>
             </div>
             
             <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -877,6 +886,8 @@ const Settings: React.FC = () => {
               <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
                 {updateReady ? (
                   <button className="action-btn active" onClick={() => window.electronAPI?.installUpdate()}>Перезапустить и установить</button>
+                ) : updateAvailable && !downloadProgress ? (
+                  <button className="action-btn active" onClick={() => { window.electronAPI?.downloadUpdate(); setUpdateMsg(language === 'ru' ? 'Загрузка...' : 'Downloading...'); setUpdateAvailable(false); }}>{language === 'ru' ? 'Скачать обновление' : 'Download Update'}</button>
                 ) : (
                   <button className="action-btn active" onClick={handleCheckUpdates}>{t(language as Lang, 'checkUpdates')}</button>
                 )}

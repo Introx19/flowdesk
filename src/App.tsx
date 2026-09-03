@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Timer as TimerIcon, Hourglass, Calculator as CalculatorIcon, List, Pin, X, Minus, Square, Scissors, Palette, PanelLeftClose, PanelRightClose, Settings as SettingsIcon, Droplet, Moon, ExternalLink, StickyNote, ChevronsUp, FlaskConical, LineChart, BookOpen, FunctionSquare, Scale, Globe, ChevronDown, Terminal, MousePointerClick, Coins, LayoutGrid, Keyboard, Sparkles } from 'lucide-react';
+import { Timer as TimerIcon, Hourglass, Calculator as CalculatorIcon, List, Pin, X, Minus, Square, Scissors, Palette, PanelLeftClose, PanelRightClose, Settings as SettingsIcon, Droplet, Moon, ExternalLink, StickyNote, ChevronsUp, FlaskConical, LineChart, BookOpen, FunctionSquare, Scale, Globe, ChevronDown, Terminal, MousePointerClick, Coins, LayoutGrid, Keyboard, Sparkles, Code2 } from 'lucide-react';
 import Stopwatch from './components/Stopwatch';
 import MiniTimer from './components/MiniTimer';
 import Reminders from './components/Reminders';
@@ -22,6 +22,8 @@ import AutoClicker from './components/dlc/AutoClicker';
 import Numismatics from './components/dlc/Numismatics';
 import HumanTyper from './components/dlc/HumanTyper';
 import SuperHumanizer from './components/dlc/SuperHumanizer';
+import CreatorStudio from './components/dlc/CreatorStudio';
+import PluginShell from './components/dlc/PluginShell';
 import ScreenshotSelect from './components/ScreenshotSelect';
 import ScreenshotPreview from './components/ScreenshotPreview';
 import Onboarding from './components/Onboarding';
@@ -51,7 +53,7 @@ function App() {
   }, []);
 
 
-  const [activeTab, setActiveTab] = useState<'stopwatch' | 'minitimer' | 'reminders' | 'calc' | 'tasks' | 'notes' | 'settings' | 'store' | 'periodicTable' | 'desmos' | 'formulas' | 'integrals' | 'converter' | 'worldClock' | 'devTools' | 'autoclicker' | 'numismatics' | 'humanTyper' | 'superHumanizer' | 'library'>('stopwatch');
+  const [activeTab, setActiveTab] = useState<'stopwatch' | 'minitimer' | 'reminders' | 'calc' | 'tasks' | 'notes' | 'settings' | 'store' | 'periodicTable' | 'desmos' | 'formulas' | 'integrals' | 'converter' | 'worldClock' | 'devTools' | 'autoclicker' | 'numismatics' | 'humanTyper' | 'superHumanizer' | 'creatorStudio' | 'library'>('stopwatch');
   const [isPinned, setIsPinned] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [isMini, setIsMini] = useState(false);
@@ -59,9 +61,22 @@ function App() {
   const [miniAnimating, setMiniAnimating] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
   const [updateReadyInfo, setUpdateReadyInfo] = useState<{ version: string } | null>(null);
+  const [plugins, setPlugins] = useState<any[]>([]);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragStarted = useRef<boolean>(false);
+
+  const refreshPlugins = () => {
+    if (window.electronAPI?.getPlugins) {
+      window.electronAPI.getPlugins().then(list => {
+        setPlugins(list);
+      }).catch(e => console.error('FAILED TO LOAD PLUGINS:', e));
+    }
+  };
+
+  useEffect(() => {
+    refreshPlugins();
+  }, []);
   
   const [showSplash, setShowSplash] = useState(() => {
     if (window.location.hash) return false;
@@ -133,9 +148,10 @@ function App() {
 
   useEffect(() => {
     if (window.electronAPI?.onWindowMaximized) {
-      window.electronAPI.onWindowMaximized((maximized) => {
+      const unsub = window.electronAPI.onWindowMaximized((maximized) => {
         setIsMaximized(maximized);
       });
+      return () => unsub();
     }
   }, []);
 
@@ -177,7 +193,7 @@ function App() {
 
   useEffect(() => {
     if (window.electronAPI && window.electronAPI.onFastScreenshotDone) {
-      window.electronAPI.onFastScreenshotDone((dataUrl: string) => {
+      const unsub = window.electronAPI.onFastScreenshotDone((dataUrl: string) => {
         try {
           const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
           audio.volume = volumeRef.current ? volumeRef.current / 100 : 0.5;
@@ -251,9 +267,21 @@ function App() {
   if (hash.includes('numismatics')) return <ToolWindowShell><Numismatics /></ToolWindowShell>;
   if (hash.includes('humanTyper')) return <ToolWindowShell><HumanTyper /></ToolWindowShell>;
   if (hash.includes('superHumanizer')) return <ToolWindowShell><SuperHumanizer /></ToolWindowShell>;
+  if (hash.includes('creatorStudio')) return <ToolWindowShell><CreatorStudio onPluginsChange={refreshPlugins} /></ToolWindowShell>;
+  
+  if (hash.includes('/plugin-')) {
+    const pluginId = hash.split('/plugin-')[1];
+    const plugin = plugins.find(p => p.id === pluginId);
+    if (plugin) {
+      return <ToolWindowShell><PluginShell plugin={plugin} /></ToolWindowShell>;
+    } else {
+      return <ToolWindowShell><div className="p-4 text-red-500">Plugin not found or loading... ({pluginId})</div></ToolWindowShell>;
+    }
+  }
   if (hash.includes('library')) return (
     <ToolWindowShell>
       <Library 
+        plugins={plugins}
         onOpenTool={(tool) => {
           window.electronAPI?.openToolWindow(tool);
           window.electronAPI?.windowClose();
@@ -269,6 +297,15 @@ function App() {
       />
     </ToolWindowShell>
   );
+
+  if (hash && hash !== '#/') {
+    return (
+      <div style={{ color: 'white', padding: 20, background: '#111', height: '100vh' }}>
+        <h2>Unhandled route:</h2>
+        <p>{hash}</p>
+      </div>
+    );
+  }
 
   const modal = useModal();
 
@@ -542,34 +579,47 @@ function App() {
           
           <div className="custom-scrollbar" style={{ flex: 1, overflowY: isCompact ? 'hidden' : 'overlay', overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: '5px', width: '100%', alignItems: 'center' }}>
             {pinnedOrder.filter(id => id !== 'screenshot' && id !== 'paint').map(toolId => {
-              if (!activeTools[toolId as keyof typeof activeTools] || !pinnedTools[toolId]) return null;
+              // Plugin tools (plugin-xxx) are tracked by plugins array, not activeTools
+              // creatorStudio is also a DLC tool
+              const isPluginTool = toolId.startsWith('plugin-');
+              const isCreatorStudio = toolId === 'creatorStudio';
+              const isActiveTool = isPluginTool || isCreatorStudio || (activeTools as any)[toolId];
+              if (!isActiveTool || !pinnedTools[toolId]) return null;
 
               const isActive = activeTab === toolId && !isCompact;
-              let IconComponent = null;
+              let IconComponent: any = null;
               let title = '';
               let onClickAction = () => openToolOption(toolId);
 
-              switch(toolId) {
-                case 'stopwatch': IconComponent = TimerIcon; title = t(language as Lang, 'stopwatch'); break;
-                case 'minitimer': IconComponent = Hourglass; title = t(language as Lang, 'minitimer'); break;
-                case 'reminders': IconComponent = Pin; title = t(language as Lang, 'reminders'); break;
-                case 'calc': IconComponent = CalculatorIcon; title = t(language as Lang, 'calc'); break;
-                case 'tasks': IconComponent = List; title = t(language as Lang, 'tasks'); break;
-                case 'notes': IconComponent = StickyNote; title = t(language as Lang, 'notes'); break;
-                case 'periodicTable': IconComponent = FlaskConical; title = t(language as Lang, 'periodicTable'); break;
-                case 'desmos': IconComponent = LineChart; title = t(language as Lang, 'desmos'); break;
-                case 'formulas': IconComponent = BookOpen; title = t(language as Lang, 'formulas'); break;
-                case 'integrals': IconComponent = FunctionSquare; title = t(language as Lang, 'integrals'); break;
-                case 'converter': IconComponent = Scale; title = t(language as Lang, 'converter'); break;
-                case 'worldClock': IconComponent = Globe; title = t(language as Lang, 'dlc_worldClock_name' as any); break;
-                case 'devTools': IconComponent = Terminal; title = t(language as Lang, 'dlc_devTools_name' as any); break;
-                case 'autoclicker': IconComponent = MousePointerClick; title = t(language as Lang, 'autoclicker'); break;
-                case 'numismatics': IconComponent = Coins; title = t(language as Lang, 'numismatics_title' as any) || 'Numismatics'; break;
-                case 'humanTyper': IconComponent = Keyboard; title = 'Human Typer'; break;
-                case 'superHumanizer': IconComponent = Sparkles; title = 'Super Humanizer'; break;
-                case 'screenshot': IconComponent = Scissors; title = t(language as Lang, 'screenshot'); onClickAction = takeScreenshot; break;
-                case 'paint': IconComponent = Palette; title = t(language as Lang, 'paint'); onClickAction = openPaint; break;
-                default: return null;
+              if (toolId.startsWith('plugin-')) {
+                const p = plugins.find(x => x.id === toolId.replace('plugin-', ''));
+                if (p) {
+                  IconComponent = LayoutGrid;
+                  title = p.name;
+                }
+              } else {
+                switch(toolId) {
+                  case 'stopwatch': IconComponent = TimerIcon; title = t(language as Lang, 'stopwatch'); break;
+                  case 'minitimer': IconComponent = Hourglass; title = t(language as Lang, 'minitimer'); break;
+                  case 'reminders': IconComponent = Pin; title = t(language as Lang, 'reminders'); break;
+                  case 'calc': IconComponent = CalculatorIcon; title = t(language as Lang, 'calc'); break;
+                  case 'tasks': IconComponent = List; title = t(language as Lang, 'tasks'); break;
+                  case 'notes': IconComponent = StickyNote; title = t(language as Lang, 'notes'); break;
+                  case 'periodicTable': IconComponent = FlaskConical; title = t(language as Lang, 'periodicTable'); break;
+                  case 'desmos': IconComponent = LineChart; title = t(language as Lang, 'desmos'); break;
+                  case 'formulas': IconComponent = BookOpen; title = t(language as Lang, 'formulas'); break;
+                  case 'integrals': IconComponent = FunctionSquare; title = t(language as Lang, 'integrals'); break;
+                  case 'converter': IconComponent = Scale; title = t(language as Lang, 'converter'); break;
+                  case 'worldClock': IconComponent = Globe; title = t(language as Lang, 'dlc_worldClock_name' as any); break;
+                  case 'devTools': IconComponent = Terminal; title = t(language as Lang, 'dlc_devTools_name' as any); break;
+                  case 'autoclicker': IconComponent = MousePointerClick; title = t(language as Lang, 'autoclicker'); break;
+                  case 'numismatics': IconComponent = Coins; title = t(language as Lang, 'numismatics_title' as any) || 'Numismatics'; break;
+                  case 'humanTyper': IconComponent = Keyboard; title = 'Human Typer'; break;
+                  case 'superHumanizer': IconComponent = Sparkles; title = 'Super Humanizer'; break;
+                  case 'creatorStudio': IconComponent = Code2; title = 'Creator Studio'; break;
+                  case 'screenshot': IconComponent = Scissors; title = t(language as Lang, 'screenshot'); onClickAction = takeScreenshot; break;
+                  case 'paint': IconComponent = Palette; title = t(language as Lang, 'paint'); onClickAction = openPaint; break;
+                }
               }
 
               if (!IconComponent) return null;
@@ -768,8 +818,16 @@ function App() {
           {activeTab === 'numismatics' && <Numismatics />}
           {activeTab === 'humanTyper' && <HumanTyper />}
           {activeTab === 'superHumanizer' && <SuperHumanizer />}
+          {activeTab === 'creatorStudio' && <CreatorStudio onPluginsChange={refreshPlugins} />}
           {activeTab === 'settings' && <Settings />}
-          {activeTab === 'library' && <Library onOpenTool={openToolOption} openPaint={openPaint} takeScreenshot={takeScreenshot} />}
+          {activeTab === 'library' && <Library onOpenTool={openToolOption} openPaint={openPaint} takeScreenshot={takeScreenshot} plugins={plugins} />}
+          {activeTab.startsWith('plugin-') && (
+            plugins.find(p => p.id === activeTab.replace('plugin-', '')) ? (
+              <PluginShell plugin={plugins.find(p => p.id === activeTab.replace('plugin-', ''))} />
+            ) : (
+              <div className="p-4 text-red-500">Plugin not found or loading... ({activeTab})</div>
+            )
+          )}
         </div>
       )}
     </div>

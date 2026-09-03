@@ -18,6 +18,10 @@ export interface ElectronAPI {
   onAddScreenshotLayer: (callback: (dataUrl: string) => void) => void;
   closePreviewWindow: () => void;
   selectFile: (filters: any[]) => Promise<string | null>;
+  getPlugins: () => Promise<any[]>;
+  installPlugin: (zipPath: string) => Promise<{success: boolean; error?: string}>;
+  uninstallPlugin: (folderName: string) => Promise<{success: boolean; error?: string}>;
+  readPluginFile: (pluginId: string, filePath: string) => Promise<string | null>;
   selectFolder: () => Promise<string | null>;
   updateShortcuts: (shortcuts: any, multiScreenshot: boolean, fastScreenshot?: boolean, screenshotDelay?: number) => void;
   showNotification: (title: string, body: string, image?: string) => void;
@@ -43,13 +47,20 @@ export interface ElectronAPI {
   setAutoclickerConfig: (hotkey: string, interval: number, intervalUnit: 'ms'|'s'|'m', button: 'left' | 'right' | 'middle', randomizeMs: number) => void;
   onAutoclickerStateChanged: (callback: (isActive: boolean) => void) => void;
   onWindowMaximized: (callback: (isMaximized: boolean) => void) => void;
-  setHumanTyperConfig: (startHotkey: string, stopHotkey: string, config: any) => void;
+  setHumanTyperConfig: (startHotkey: string, pauseHotkey: string, stopHotkey: string, config: any) => void;
   startHumanTyping: (text: string, config: any) => void;
   stopHumanTyping: () => void;
+  pauseHumanTyping: () => void;
+  resumeHumanTyping: () => void;
   onHumanTyperState: (callback: (isActive: boolean) => void) => void;
+  onHumanTyperPaused: (callback: (isPaused: boolean) => void) => void;
   updateAiKey: (key: string) => void;
   analyzeText: (data: any) => Promise<any>;
   humanizeText: (data: any) => Promise<any>;
+  getPlugins: () => Promise<any[]>;
+  readPluginFile: (pluginFolderName: string, filename: string) => Promise<string | null>;
+  sendWebhook: (url: string, filePath: string, message?: string) => Promise<{ success: boolean; status?: number; text?: string; error?: string }>;
+  verifyPluginZip: (zipPath: string) => Promise<{valid: boolean, error?: string}>;
 }
 
 declare global {

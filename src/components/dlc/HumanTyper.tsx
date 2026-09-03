@@ -1,11 +1,12 @@
 import InfoButton from '../InfoButton';
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
-import { Keyboard, Type, Settings, Play, Square, AlertCircle } from 'lucide-react';
+import { Keyboard, Type, Settings, Play, Square, AlertCircle, Pause } from 'lucide-react';
 
 const HumanTyper: React.FC = () => {
   const { language, updateSettings, humanTyperSpeed, humanTyperErrors, humanTyperThinkPct, humanTyperStartHotkey, humanTyperStopHotkey } = useSettings();
   const [isActive, setIsActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [localText, setLocalText] = useState('');
 
@@ -13,7 +14,13 @@ const HumanTyper: React.FC = () => {
     if (window.electronAPI && window.electronAPI.onHumanTyperState) {
       window.electronAPI.onHumanTyperState((state: boolean) => {
         setIsActive(state);
+        if (!state) setIsPaused(false);
       });
+      if (window.electronAPI.onHumanTyperPaused) {
+        window.electronAPI.onHumanTyperPaused((pausedState: boolean) => {
+          setIsPaused(pausedState);
+        });
+      }
     }
   }, []);
 
@@ -118,27 +125,89 @@ const HumanTyper: React.FC = () => {
               </select>
             </div>
 
-            <h4 style={{ margin: '10px 0 5px 0', opacity: 0.8, fontSize: '0.9em' }}>Глобальные Хоткеи (из буфера обмена)</h4>
+            <h4 style={{ margin: '10px 0 5px 0', opacity: 0.8, fontSize: '0.9em' }}>Глобальные Хоткеи</h4>
             
             <div className="setting-item">
               <span>Хоткей Старта</span>
               <input 
                 type="text" 
+                className="custom-hotkey-input"
                 value={humanTyperStartHotkey} 
-                onChange={(e) => updateSettings({ humanTyperStartHotkey: e.target.value })}
-                style={{ width: '80px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', color: 'var(--text-color)', outline: 'none' }}
-                placeholder="F10"
+                readOnly
+                onKeyDown={(e) => {
+                  e.preventDefault();
+                  const keys = [];
+                  if (e.ctrlKey) keys.push('CommandOrControl');
+                  if (e.altKey) keys.push('Alt');
+                  if (e.shiftKey) keys.push('Shift');
+                  if (e.metaKey && !e.ctrlKey) keys.push('CommandOrControl');
+                  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+                  if ((e.key === 'Backspace' || e.key === 'Delete') && keys.length === 0) {
+                    updateSettings({ humanTyperStartHotkey: '' });
+                    return;
+                  }
+                  const pressedKey = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+                  keys.push(pressedKey);
+                  updateSettings({ humanTyperStartHotkey: keys.join('+') });
+                }}
+                style={{ width: '120px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', color: 'var(--text-color)', outline: 'none', cursor: 'pointer' }}
+                placeholder="Нажми кнопку..."
               />
             </div>
             
             <div className="setting-item">
+              <span>Хоткей Паузы</span>
+              <input 
+                type="text" 
+                className="custom-hotkey-input"
+                value={useSettings().humanTyperPauseHotkey} 
+                readOnly
+                onKeyDown={(e) => {
+                  e.preventDefault();
+                  const keys = [];
+                  if (e.ctrlKey) keys.push('CommandOrControl');
+                  if (e.altKey) keys.push('Alt');
+                  if (e.shiftKey) keys.push('Shift');
+                  if (e.metaKey && !e.ctrlKey) keys.push('CommandOrControl');
+                  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+                  if ((e.key === 'Backspace' || e.key === 'Delete') && keys.length === 0) {
+                    updateSettings({ humanTyperPauseHotkey: '' });
+                    return;
+                  }
+                  const pressedKey = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+                  keys.push(pressedKey);
+                  updateSettings({ humanTyperPauseHotkey: keys.join('+') });
+                }}
+                style={{ width: '120px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', color: 'var(--text-color)', outline: 'none', cursor: 'pointer' }}
+                placeholder="Нажми кнопку..."
+              />
+            </div>
+
+            <div className="setting-item">
               <span>Хоткей Остановки</span>
               <input 
                 type="text" 
+                className="custom-hotkey-input"
                 value={humanTyperStopHotkey} 
-                onChange={(e) => updateSettings({ humanTyperStopHotkey: e.target.value })}
-                style={{ width: '80px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', color: 'var(--text-color)', outline: 'none' }}
-                placeholder="F8"
+                readOnly
+                onKeyDown={(e) => {
+                  e.preventDefault();
+                  const keys = [];
+                  if (e.ctrlKey) keys.push('CommandOrControl');
+                  if (e.altKey) keys.push('Alt');
+                  if (e.shiftKey) keys.push('Shift');
+                  if (e.metaKey && !e.ctrlKey) keys.push('CommandOrControl');
+                  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+                  if ((e.key === 'Backspace' || e.key === 'Delete') && keys.length === 0) {
+                    updateSettings({ humanTyperStopHotkey: '' });
+                    return;
+                  }
+                  const pressedKey = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+                  keys.push(pressedKey);
+                  updateSettings({ humanTyperStopHotkey: keys.join('+') });
+                }}
+                style={{ width: '120px', textAlign: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '8px', color: 'var(--text-color)', outline: 'none', cursor: 'pointer' }}
+                placeholder="Нажми кнопку..."
               />
             </div>
           </div>
@@ -165,10 +234,20 @@ const HumanTyper: React.FC = () => {
             </div>
 
             {isActive ? (
-              <button className="timer-btn stop" onClick={handleStop} style={{ padding: '15px' }}>
-                <Square size={20} />
-                Остановить печать
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="timer-btn stop" onClick={handleStop} style={{ padding: '15px', flex: 1 }}>
+                  <Square size={20} />
+                  Остановить
+                </button>
+                <button 
+                  className={`timer-btn ${isPaused ? 'start' : 'pause'}`} 
+                  onClick={isPaused ? () => window.electronAPI.resumeHumanTyping() : () => window.electronAPI.pauseHumanTyping()} 
+                  style={{ padding: '15px', flex: 1, background: isPaused ? 'var(--accent)' : '#ffb020', color: '#1a1a24' }}
+                >
+                  {isPaused ? <Play size={20} /> : <Pause size={20} />}
+                  {isPaused ? 'Возобновить' : 'Пауза'}
+                </button>
+              </div>
             ) : (
               <button 
                 className="timer-btn start" 

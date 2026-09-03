@@ -60,6 +60,7 @@ export interface SettingsState {
     numismatics: boolean;
     humanTyper: boolean;
     superHumanizer: boolean;
+    creatorStudio: boolean;
   };
   pinnedTools: Record<string, boolean>;
   pinnedOrder: string[];
@@ -69,6 +70,7 @@ export interface SettingsState {
   humanTyperThinkMin: number;
   humanTyperThinkMax: number;
   humanTyperStartHotkey: string;
+  humanTyperPauseHotkey: string;
   humanTyperStopHotkey: string;
   geminiApiKey: string;
   geminiModel: string;
@@ -135,6 +137,7 @@ const defaultSettings: SettingsState = {
     numismatics: false,
     humanTyper: false,
     superHumanizer: false,
+    creatorStudio: false,
   },
   pinnedTools: {
     stopwatch: true,
@@ -153,6 +156,7 @@ const defaultSettings: SettingsState = {
   humanTyperThinkMin: 350,
   humanTyperThinkMax: 1400,
   humanTyperStartHotkey: 'F10',
+  humanTyperPauseHotkey: 'F9',
   humanTyperStopHotkey: 'F8',
   geminiApiKey: '',
   geminiModel: 'gemini-3.6-flash',
@@ -211,6 +215,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       window.electronAPI.setHumanTyperConfig(
         settings.globalShortcutsEnabled ? settings.humanTyperStartHotkey : '',
+        settings.globalShortcutsEnabled ? settings.humanTyperPauseHotkey : '',
         settings.globalShortcutsEnabled ? settings.humanTyperStopHotkey : '',
         {
           speed: settings.humanTyperSpeed,

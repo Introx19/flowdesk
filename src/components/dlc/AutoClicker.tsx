@@ -252,14 +252,16 @@ export default function AutoClicker() {
               </div>
               
               {isDropdownOpen && (
+                <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setIsDropdownOpen(false)} />
                 <div style={{ 
-                  position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 10, 
+                  position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 10, 
                   background: 'var(--bg-card)', border: '1px solid var(--glass-border)', 
                   borderRadius: '12px', overflow: 'hidden', 
                   boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
-                  transformOrigin: 'top',
+                  transformOrigin: 'bottom',
                   animation: 'dropdownFadeIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                 }}>
                   {(['left', 'right', 'middle'] as const).map((btn, index) => (
@@ -284,10 +286,13 @@ export default function AutoClicker() {
                         if (autoclickerButton !== btn) e.currentTarget.style.background = 'transparent';
                       }}
                     >
-                      {t(language as Lang, (btn + 'Click') as keyof typeof translations['en'])}
+                      {btn === 'left' ? t(language as Lang, 'leftClick') : 
+                       btn === 'right' ? t(language as Lang, 'rightClick') : 
+                       t(language as Lang, 'middleClick')}
                     </div>
                   ))}
                 </div>
+                </>
               )}
             </div>
           </div>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { t, type Lang } from '../../i18n/texts';
 import { ArrowRightLeft } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
-import { Scale } from 'lucide-react';
+import { Scale, Plus, X } from 'lucide-react';
 
 type Category = 'length' | 'mass' | 'temp' | 'data' | 'area' | 'speed' | 'volume' | 'currency';
 
@@ -106,13 +106,31 @@ const convert = (value: number, from: string, to: string, category: Category): n
 
 const Dropdown = ({ value, options, onChange, lang }: { value: string, options: any, onChange: (val: string) => void, lang: string }) => {
   const [open, setOpen] = useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+
+  const handleOpen = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      // Check if there is enough space below, otherwise open upwards
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const menuHeight = 200; // max height of dropdown
+      
+      if (spaceBelow < menuHeight && rect.top > menuHeight) {
+        setCoords({ top: rect.top - menuHeight - 5, left: rect.left, width: rect.width });
+      } else {
+        setCoords({ top: rect.bottom + 5, left: rect.left, width: rect.width });
+      }
+    }
+    setOpen(true);
+  };
   
   return (
-    <div style={{ position: 'relative', flex: 1 }}>
+    <div style={{ position: 'relative', flex: 1 }} ref={containerRef}>
       <div 
         className="task-input" 
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', height: '100%', minHeight: '42px' }}
-        onClick={() => setOpen(!open)}
+        onClick={() => open ? setOpen(false) : handleOpen()}
       >
         <span>{options[value]?.name?.[lang as any] || options[value]?.name?.en || ''}</span>
         <span style={{ fontSize: '0.8em', color: 'var(--accent)' }}>▼</span>
@@ -120,11 +138,11 @@ const Dropdown = ({ value, options, onChange, lang }: { value: string, options: 
       
       {open && (
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setOpen(false)} />
+          <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} onClick={() => setOpen(false)} />
           <div style={{
-            position: 'absolute', top: '100%', left: 0, right: 0, 
+            position: 'fixed', top: coords.top, left: coords.left, width: coords.width,
             background: 'var(--bg-main)', border: '1px solid var(--accent)', 
-            borderRadius: '8px', marginTop: '5px', zIndex: 100, 
+            borderRadius: '8px', zIndex: 99999, 
             maxHeight: '200px', overflowY: 'auto',
             boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
           }}>
@@ -168,17 +186,16 @@ const Converter: React.FC = () => {
   const { language } = useSettings();
   const [cat, setCat] = useState<Category>('length');
   const [val1, setVal1] = useState<string>('1');
-  const [val2, setVal2] = useState<string>('');
   
   const catUnits = Object.keys(units[cat]);
   const [unit1, setUnit1] = useState<string>(catUnits[0]);
-  const [unit2, setUnit2] = useState<string>(catUnits[1] || catUnits[0]);
+  const [targetUnits, setTargetUnits] = useState<string[]>([catUnits[1] || catUnits[0]]);
   const [lastUpdate, setLastUpdate] = useState<string>('');
 
   const handleSwapUnits = () => {
     const temp = unit1;
-    setUnit1(unit2);
-    setUnit2(temp);
+    setUnit1(targetUnits[0]);
+    setTargetUnits([temp, ...targetUnits.slice(1)]);
   };
   
   useEffect(() => {
@@ -216,21 +233,19 @@ const Converter: React.FC = () => {
     setCat(newCat);
     const u = Object.keys(units[newCat]);
     setUnit1(u[0]);
-    setUnit2(u[1] || u[0]);
+    setTargetUnits([u[1] || u[0]]);
     setVal1('1');
   };
   
-  useEffect(() => {
+  const getConvertedValue = (targetUnit: string) => {
     const num = parseFloat(val1.replace(/,/g, ''));
     if (!isNaN(num)) {
-      const res = convert(num, unit1, unit2, cat);
-      // Format with commas to match the style
+      const res = convert(num, unit1, targetUnit, cat);
       const formattedRes = String(parseFloat(res.toFixed(6)));
-      setVal2(formatValue(formattedRes));
-    } else {
-      setVal2('');
+      return formatValue(formattedRes);
     }
-  }, [val1, unit1, unit2, cat]);
+    return '';
+  };
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', color: 'var(--text-main)', padding: '20px' }}>
@@ -284,16 +299,48 @@ const Converter: React.FC = () => {
           </button>
         </div>
         
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch' }}>
-          <input 
-            type="text" 
-            className="task-input" 
-            style={{ flex: 1, fontSize: '1.2em' }}
-            value={val2}
-            readOnly
-          />
-          <Dropdown value={unit2} options={(units as any)[cat]} onChange={setUnit2} lang={language} />
-        </div>
+        {targetUnits.map((targetUnit, index) => (
+          <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'stretch' }}>
+            <input 
+              type="text" 
+              className="task-input" 
+              style={{ flex: 1, fontSize: '1.2em' }}
+              value={getConvertedValue(targetUnit)}
+              readOnly
+            />
+            <Dropdown 
+              value={targetUnit} 
+              options={(units as any)[cat]} 
+              onChange={(newUnit) => {
+                const newTargets = [...targetUnits];
+                newTargets[index] = newUnit;
+                setTargetUnits(newTargets);
+              }} 
+              lang={language} 
+            />
+            {targetUnits.length > 1 && (
+              <button 
+                className="icon-btn"
+                style={{ padding: '0 12px', background: 'rgba(255,0,0,0.1)', color: '#ff4444', borderRadius: '8px' }}
+                onClick={() => setTargetUnits(targetUnits.filter((_, i) => i !== index))}
+                title="Удалить"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        {targetUnits.length < 5 && (
+          <button 
+            className="action-btn outline" 
+            style={{ width: '100%', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '5px', borderStyle: 'dashed' }}
+            onClick={() => setTargetUnits([...targetUnits, catUnits[1] || catUnits[0]])}
+          >
+            <Plus size={18} />
+            {language === 'ru' ? 'Добавить единицу' : 'Add Unit'}
+          </button>
+        )}
       </div>
     </div>
   );

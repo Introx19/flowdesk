@@ -21,10 +21,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showScreenshotMenu: (dataUrl: string, strings?: Record<string, string>) => ipcRenderer.send('show-screenshot-menu', dataUrl, strings),
   sendCroppedScreenshot: (dataUrl: string, multiMode: boolean) => ipcRenderer.send('cropped-screenshot', dataUrl, multiMode),
   onScreenshotData: (callback: (dataUrl: string) => void) => {
-    ipcRenderer.on('load-screenshot-data', (_event, data) => callback(data))
+    const listener = (_event: any, data: string) => callback(data);
+    ipcRenderer.on('load-screenshot-data', listener);
+    return () => ipcRenderer.removeListener('load-screenshot-data', listener);
   },
   onAddScreenshotLayer: (callback: (dataUrl: string) => void) => {
-    ipcRenderer.on('add-screenshot-layer', (_event, data) => callback(data))
+    const listener = (_event: any, data: string) => callback(data);
+    ipcRenderer.on('add-screenshot-layer', listener);
+    return () => ipcRenderer.removeListener('add-screenshot-layer', listener);
   },
   closePreviewWindow: () => ipcRenderer.send('close-preview-window'),
   selectFile: (filters: any[]) => ipcRenderer.invoke('select-file', filters),
@@ -32,12 +36,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateShortcuts: (shortcuts: any, multiScreenshot: boolean, fastScreenshot?: boolean, delay?: number) => ipcRenderer.send('update-shortcuts', shortcuts, multiScreenshot, fastScreenshot, delay),
   showNotification: (title: string, body: string, image?: string) => ipcRenderer.send('show-notification', title, body, image),
   onFastScreenshotDone: (callback: (dataUrl: string) => void) => {
-    ipcRenderer.removeAllListeners('fast-screenshot-done');
-    ipcRenderer.on('fast-screenshot-done', (_event, dataUrl) => callback(dataUrl));
+    const listener = (_event: any, dataUrl: string) => callback(dataUrl);
+    ipcRenderer.on('fast-screenshot-done', listener);
+    return () => ipcRenderer.removeListener('fast-screenshot-done', listener);
   },
   onNotificationData: (callback: (data: any) => void) => {
-    ipcRenderer.removeAllListeners('notification-data');
-    ipcRenderer.on('notification-data', (_event, data) => callback(data));
+    const listener = (_event: any, data: any) => callback(data);
+    ipcRenderer.on('notification-data', listener);
+    return () => ipcRenderer.removeListener('notification-data', listener);
   },
   setStartupMode: (runOnStartup: boolean) => ipcRenderer.send('set-startup-mode', runOnStartup),
   setMiniMode: (isMini: boolean) => ipcRenderer.send('set-mini-mode', isMini),
@@ -65,7 +71,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url: string) => ipcRenderer.send('open-external', url),
   downloadUpdate: () => ipcRenderer.send('download-update'),
   installUpdate: () => ipcRenderer.send('install-update'),
-  onToggleGlobalShortcuts: (callback: () => void) => ipcRenderer.on('toggle-global-shortcuts', () => callback()),
+  onToggleGlobalShortcuts: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on('toggle-global-shortcuts', listener);
+    return () => ipcRenderer.removeListener('toggle-global-shortcuts', listener);
+  },
   resizeWindow: (width: number, height: number) => ipcRenderer.send('resize-window', width, height),
   forceResizeWindow: (width: number, height: number) => ipcRenderer.send('force-resize-window', width, height),
   killPort: (port: number) => ipcRenderer.invoke('kill-port', port),
@@ -73,12 +83,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.send('set-autoclicker-config', hotkey, interval, intervalUnit, button, randomizeMs)
   },
   onAutoclickerStateChanged: (callback: (isActive: boolean) => void) => {
-    ipcRenderer.removeAllListeners('autoclicker-state-changed');
-    ipcRenderer.on('autoclicker-state-changed', (_event, isActive) => callback(isActive));
+    const listener = (_event: any, isActive: boolean) => callback(isActive);
+    ipcRenderer.on('autoclicker-state-changed', listener);
+    return () => ipcRenderer.removeListener('autoclicker-state-changed', listener);
   },
   onWindowMaximized: (callback: (isMaximized: boolean) => void) => {
-    ipcRenderer.removeAllListeners('window-maximized');
-    ipcRenderer.on('window-maximized', (_event, isMaximized) => callback(isMaximized));
+    const listener = (_event: any, isMaximized: boolean) => callback(isMaximized);
+    ipcRenderer.on('window-maximized', listener);
+    return () => ipcRenderer.removeListener('window-maximized', listener);
   },
   setHumanTyperConfig: (startHotkey: string, stopHotkey: string, config: any) => {
     ipcRenderer.send('set-human-typer-config', startHotkey, stopHotkey, config);
@@ -88,10 +100,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   stopHumanTyping: () => ipcRenderer.send('stop-human-typing'),
   onHumanTyperState: (callback: (isActive: boolean) => void) => {
-    ipcRenderer.removeAllListeners('human-typer-state');
-    ipcRenderer.on('human-typer-state', (_event, isActive) => callback(isActive));
+    const listener = (_event: any, isActive: boolean) => callback(isActive);
+    ipcRenderer.on('human-typer-state', listener);
+    return () => ipcRenderer.removeListener('human-typer-state', listener);
   },
   updateAiKey: (key: string) => ipcRenderer.send('update-ai-key', key),
   analyzeText: (data: any) => ipcRenderer.invoke('analyze-text', data),
-  humanizeText: (data: any) => ipcRenderer.invoke('humanize-text', data)
+  humanizeText: (data: any) => ipcRenderer.invoke('humanize-text', data),
+  getPlugins: () => ipcRenderer.invoke('get-plugins'),
+  installPlugin: (zipPath: string) => ipcRenderer.invoke('install-plugin', zipPath),
+  uninstallPlugin: (folderName: string) => ipcRenderer.invoke('uninstall-plugin', folderName),
+  readPluginFile: (folderName: string, filePath: string) => ipcRenderer.invoke('read-plugin-file', folderName, filePath),
+  sendWebhook: (url: string, filePath: string, message?: string) => ipcRenderer.invoke('send-webhook', url, filePath, message),
+  verifyPluginZip: (zipPath: string) => ipcRenderer.invoke('verify-plugin-zip', zipPath)
 })

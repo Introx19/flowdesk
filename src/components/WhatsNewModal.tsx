@@ -1,23 +1,19 @@
 import { X, Sparkles } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 
-const CURRENT_VERSION = '1.8.4';
+const CURRENT_VERSION = '1.8.5';
 
 export default function WhatsNewModal({ onClose }: { onClose: () => void }) {
   const { language } = useSettings();
   
   const items = language === 'ru' ? [
-    { icon: '⚡', title: 'Починен Автокликер и Human Typer', desc: 'Автокликер и эмулятор печати Human Typer теперь работают идеально на уровне системы с глобальными хоткеями.' },
-    { icon: '📚', title: 'Библиотека в компактном режиме', desc: 'При клике на библиотеку в компактном режиме открывается удобное окно для быстрого запуска любого DLC.' },
-    { icon: '📦', title: 'Установщик с выбором папки', desc: 'При первичной установке доступен выбор папки и ярлыков, а обновления происходят тихо и быстро в фоне.' },
-    { icon: '🪟', title: 'Вертикальные кнопки мини-режима', desc: 'Кнопки выхода из компактного режима выстроены вертикально и легко нажимаются.' },
-    { icon: '🤖', title: 'Super Humanizer v1.0.0', desc: 'AI-студия для очеловечивания текста, обход AI-детекторов, режим маскировки (F9) и соглашение EULA.' },
+    { icon: '🧩', title: 'Отправка плагинов в Creator Studio', desc: 'Теперь вы можете загружать свои ZIP-архивы с плагинами. Встроена умная проверка на наличие manifest.json!' },
+    { icon: '📦', title: 'Возврат нативных обновлений', desc: 'Мы вернули удобные уведомления и ручную установку обновлений (как в 1.8.2), вместо тихой фоновой загрузки.' },
+    { icon: '🚀', title: 'Улучшена производительность', desc: 'Исправлены утечки памяти в IPC, что сделало работу приложения еще более стабильной.' },
   ] : [
-    { icon: '⚡', title: 'AutoClicker & Human Typer Fixed', desc: 'AutoClicker and Human Typer keystroke simulator now work seamlessly via global hotkeys.' },
-    { icon: '📚', title: 'Library in Compact Mode', desc: 'Clicking the library icon in compact mode now opens a standalone window to easily launch any tool.' },
-    { icon: '📦', title: 'Custom Installer Directory', desc: 'Initial installer allows custom installation path & shortcuts, while updates remain fast and silent in the background.' },
-    { icon: '🪟', title: 'Vertical Compact Mode Controls', desc: 'Controls at the bottom of the compact sidebar are arranged vertically for effortless clicking.' },
-    { icon: '🤖', title: 'Super Humanizer v1.0.0', desc: 'AI ghostwriting studio, AI detector bypass, Stealth Mode (F9), and EULA disclaimer.' },
+    { icon: '🧩', title: 'Plugin Submission in Creator Studio', desc: 'You can now submit your own plugin ZIP archives. Includes smart manifest.json validation!' },
+    { icon: '📦', title: 'Restored Native Updates', desc: 'We restored user-friendly notifications and manual update installation (like in 1.8.2), replacing silent background downloads.' },
+    { icon: '🚀', title: 'Performance Improvements', desc: 'Fixed IPC memory leaks to make the application even more stable and smooth.' },
   ];
 
   return (
